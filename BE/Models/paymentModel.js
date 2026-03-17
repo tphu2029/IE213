@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 
+const COLLECTION_NAME = "payments";
+
 const paymentSchema = new mongoose.Schema({
   patient_id: {
     type: mongoose.Schema.Types.ObjectId,
@@ -27,4 +29,38 @@ const paymentSchema = new mongoose.Schema({
   payment_date: Date,
 });
 
-export default mongoose.model("Payment", paymentSchema);
+const Payment = mongoose.model(COLLECTION_NAME, paymentSchema);
+
+// --- CÁC HÀM THAO TÁC VỚI DATABASE ---
+
+const createPayment = async (paymentData) => {
+  return await Payment.create(paymentData);
+};
+
+const getAllPayments = async () => {
+  return await Payment.find().populate("patient_id").populate("appointment_id");
+};
+
+const getPaymentById = async (id) => {
+  return await Payment.findById(id)
+    .populate("patient_id")
+    .populate("appointment_id");
+};
+
+const updatePayment = async (id, updateData) => {
+  return await Payment.findByIdAndUpdate(id, updateData, { new: true })
+    .populate("patient_id")
+    .populate("appointment_id");
+};
+
+const deletePayment = async (id) => {
+  return await Payment.findByIdAndDelete(id);
+};
+
+export const paymentModel = {
+  createPayment,
+  getAllPayments,
+  getPaymentById,
+  updatePayment,
+  deletePayment,
+};

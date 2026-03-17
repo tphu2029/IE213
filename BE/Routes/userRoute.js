@@ -4,6 +4,6 @@ import { userController } from "../Controllers/userController.js";
 
 const router = e.Router();
 
-router.get("/profile", userController.getProfile);
+router.get("/", userController.getProfile);
 
 export const userRoute = router;

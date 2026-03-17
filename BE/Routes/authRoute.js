@@ -1,9 +1,18 @@
-import e from "express";
+import express from "express";
 import { authController } from "../Controllers/authController.js";
+import {
+  registerValidate,
+  loginValidate,
+} from "../Middlewares/authValidate.js";
 
-const router = e.Router();
+import { verifyToken } from "../Middlewares/authMiddleware.js";
 
-router.post("/login", authController.login);
-router.post("/register", authController.register);
+const router = express.Router();
+
+router.post("/register", registerValidate, authController.register);
+
+router.post("/login", loginValidate, authController.login);
+
+router.post("/logout", verifyToken, authController.logout);
 
 export const authRoute = router;

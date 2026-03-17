@@ -13,6 +13,10 @@ const userSchema = new mongoose.Schema(
       enum: ["admin", "doctor", "patient", "receptionist"],
       default: "patient",
     },
+    refreshToken: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,
