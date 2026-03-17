@@ -1,6 +1,6 @@
 import { userModel } from "../Models/userModel.js";
 import bcrypt from "bcrypt";
-import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js ";
+import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
 import Session from "../Models/sessionModel.js";
 
 const register = async (body) => {

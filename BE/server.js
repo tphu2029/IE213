@@ -2,12 +2,23 @@ import express from "express";
 import { API_v1 } from "./Routes/index.js";
 import { connectDB } from "./Configs/mongodb.js";
 import cookieParser from "cookie-parser";
+import cors from "cors";
+import passport from "passport";
+import "./Configs/googleAuth.js";
+import { env } from "./Configs/environment.js";
 
 const startServer = async () => {
   const app = express();
 
+  app.use(
+    cors({
+      origin: true,
+      credentials: true,
+    })
+  );
   app.use(express.json());
   app.use(cookieParser());
+  app.use(passport.initialize());
   await connectDB();
 
   app.use("/api/v1", API_v1);
