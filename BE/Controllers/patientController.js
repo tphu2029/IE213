@@ -1,4 +1,4 @@
-import { patientService } from "../services/patientService.js";
+import { patientService } from "../Services/patientService.js";
 
 const getPatients = async (req, res) => {
   try {

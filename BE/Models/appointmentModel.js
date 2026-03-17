@@ -18,6 +18,9 @@ const appointmentSchema = new mongoose.Schema(
     time_slot: {
       type: String,
     },
+    reason: {
+      type: String,
+    },
     status: {
       type: String,
       enum: ["pending", "confirmed", "in_progress", "completed"],
