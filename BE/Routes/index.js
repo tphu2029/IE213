@@ -13,13 +13,13 @@ router.use("/auth", authRoute);
 router.use("/auth", googleRoute);
 
 //user
-router.use("/user", userRoute);
+router.use("/users", userRoute);
 
 //doctor
-router.use("/doctor", doctorRoute);
+router.use("/doctors", doctorRoute);
 
 //appointment
-router.use("/appointment", appointmentRoute);
+router.use("/appointments", appointmentRoute);
 
 //patient
 router.use("/check", patientRoute);
