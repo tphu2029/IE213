@@ -4,7 +4,7 @@ const COLLECTION_NAME = "notifications";
 const notificationSchema = new mongoose.Schema({
   user_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    ref: "users",
   },
 
   message: String,

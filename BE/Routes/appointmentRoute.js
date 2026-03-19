@@ -2,14 +2,14 @@ import express from "express";
 import { appointmentController } from "../Controllers/appointmentController.js";
 import { verifyToken } from "../Middlewares/authMiddleware.js";
 import { checkRole } from "../Middlewares/roleMiddleware.js";
-
+import { validateBookAppointment } from "../Middlewares/appointmentValidate.js";
 const router = express.Router();
 
-// Đặt lịch khám: Yêu cầu đăng nhập và có role là "patient"
+// Đặt lịch khám không trùng lịch
 router.post(
   "/book",
   verifyToken,
-  checkRole("patient"),
+  validateBookAppointment,
   appointmentController.createAppointment
 );
 

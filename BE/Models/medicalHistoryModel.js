@@ -5,7 +5,7 @@ const COLLECTION_NAME = "medical_histories";
 const medicalHistorySchema = new mongoose.Schema({
   patient_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Patient",
+    ref: "patients",
   },
 
   allergies: String,

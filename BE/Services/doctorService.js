@@ -11,6 +11,12 @@ const getAllDoctors = async () => {
   });
 };
 
+const createDoctor = async (userId) => {
+  if (!userId) {
+  }
+  return await doctorModel.createDoctor(doctorData);
+};
+
 const getDoctorById = async (doctorId) => {
   const doctor = await userModel.getUserById(doctorId);
 

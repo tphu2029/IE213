@@ -5,7 +5,7 @@ const COLLECTION_NAME = "doctor_schedules";
 const doctorScheduleSchema = new mongoose.Schema({
   doctor_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Doctor",
+    ref: "doctors",
   },
 
   day_of_week: String,

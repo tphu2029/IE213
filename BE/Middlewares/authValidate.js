@@ -13,6 +13,14 @@ const registerSchema = Joi.object({
     "string.email": "Email không đúng định dạng hợp lệ",
     "any.required": "Trường email là bắt buộc",
   }),
+  phone: Joi.string()
+    .pattern(/^[0-9]{10,11}$/)
+    .required()
+    .messages({
+      "string.empty": "Số điện thoại không được để trống",
+      "string.pattern.base": "Số điện thoại phải gồm 10-11 chữ số",
+      "any.required": "Trường số điện thoại là bắt buộc",
+    }),
   password: Joi.string()
     .min(8)
     .max(32)
@@ -25,6 +33,12 @@ const registerSchema = Joi.object({
       "string.pattern.base":
         "Mật khẩu phải bao gồm ít nhất 1 chữ hoa, 1 chữ thường, 1 chữ số và 1 ký tự đặc biệt",
       "any.required": "Trường mật khẩu là bắt buộc",
+    }),
+  role: Joi.string()
+    .valid("admin", "doctor", "patient")
+    .default("patient")
+    .messages({
+      "any.only": "Role phải là admin, doctor hoặc patient",
     }),
 });
 
@@ -55,7 +69,7 @@ export const registerValidate = (req, res, next) => {
   next();
 };
 
-//Viết lại hàm loginValidate
+//loginValidate
 export const loginValidate = (req, res, next) => {
   const { error } = loginSchema.validate(req.body);
 

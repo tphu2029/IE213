@@ -6,11 +6,11 @@ const appointmentSchema = new mongoose.Schema(
   {
     patient_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Patient",
+      ref: "patients",
     },
     doctor_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Doctor",
+      ref: "doctors",
     },
     appointment_date: {
       type: Date,

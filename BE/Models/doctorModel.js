@@ -5,13 +5,13 @@ const COLLECTION_NAME = "doctors";
 const doctorSchema = new mongoose.Schema({
   user_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    ref: "users",
     required: true,
   },
 
   department_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Department",
+    ref: "departments",
   },
 
   specialization: {
@@ -36,12 +36,13 @@ const getAllDoctors = async () => {
 };
 
 const getDoctorById = async (id) => {
-  return await Doctor.find.findBy.populate("user_id").populate("department_id");
+  return await Doctor.findById(id)
+    .populate("user_id")
+    .populate("department_id");
 };
 
 const updateDoctor = async (id, updateData) => {
-  return await Doctor.findByIdAndUpdate
-    .findByIdAndUpdate(id, updateData, { new: true })
+  return await Doctor.findByIdAndUpdate(id, updateData, { new: true })
     .populate("user_id")
     .populate("department_id");
 };
@@ -50,7 +51,6 @@ const deleteDoctor = async (id) => {
   return await Doctor.findByIdAndDelete(id);
 };
 
-// Các hàm đặc thù cho Doctor
 const getDoctorsByDepartment = async (departmentId) => {
   return await Doctor.find({ department_id: departmentId }).populate("user_id");
 };

@@ -5,12 +5,12 @@ const COLLECTION_NAME = "invoices";
 const invoiceSchema = new mongoose.Schema({
   patient_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Patient",
+    ref: "patients",
   },
 
   appointment_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Appointment",
+    ref: "appointments",
   },
 
   total_amount: Number,

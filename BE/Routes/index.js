@@ -5,6 +5,8 @@ import { patientRoute } from "./patientRoute.js";
 import { googleRoute } from "./googleRoute.js";
 import { appointmentRoute } from "./appointmentRoute.js";
 import { doctorRoute } from "./doctorRoute.js";
+import { doctorScheduleRoute } from "./doctorScheduleRoute.js";
+import { departmentRoute } from "./departmentRoute.js";
 
 const router = e.Router();
 
@@ -23,5 +25,11 @@ router.use("/appointments", appointmentRoute);
 
 //patient
 router.use("/check", patientRoute);
+
+//departments
+router.use("/departments", departmentRoute);
+
+//schedules
+router.use("/schedules", doctorScheduleRoute);
 
 export const API_v1 = router;

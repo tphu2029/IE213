@@ -4,12 +4,12 @@ const COLLECTION_NAME = "medical_records";
 const medicalRecordSchema = new mongoose.Schema({
   patient_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Patient",
+    ref: "patients",
   },
 
   doctor_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Doctor",
+    ref: "doctors",
   },
 
   symptoms: String,

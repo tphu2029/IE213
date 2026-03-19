@@ -4,7 +4,7 @@ const COLLECTION_NAME = "prescriptions";
 const prescriptionSchema = new mongoose.Schema({
   record_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "MedicalRecord",
+    ref: "medical_records",
   },
 
   medicine_name: String,
