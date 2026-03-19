@@ -16,11 +16,12 @@ const getProfileById = async (userId) => {
 };
 // 2. Cập nhật thông tin cá nhân
 const updateProfile = async (user_id, updateData) => {
-  const { username, email, phone } = updateData;
-  const updateUser = await userModel.updateUser(user_id, {
+  const { username, email, phone, avatar } = updateData;
+  const updatedUser = await userModel.updateUser(user_id, {
     username,
     email,
     phone,
+    avatar,
   });
   if (!updateProfile) {
     throw new Error("Failed to update profile");

@@ -23,7 +23,6 @@ passport.use(
           user = await userModel.createUser({
             username: profile.displayName,
             email: email,
-            // Match enum in `Models/userModel.js`
             role: "patient",
           });
         }

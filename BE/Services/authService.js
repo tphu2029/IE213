@@ -59,6 +59,7 @@ const login = async (body) => {
     refreshToken,
   };
 };
+
 const logout = async (refreshToken) => {
   try {
     if (!refreshToken) {

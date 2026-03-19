@@ -10,6 +10,7 @@ router.get(
   checkRole("doctor", "admin"),
   doctorController.getDoctors
 );
+
 router.get(
   "/:id",
   verifyToken,

@@ -6,6 +6,8 @@ import cors from "cors";
 import passport from "passport";
 import "./Configs/googleAuth.js";
 import { env } from "./Configs/environment.js";
+import morgan from "morgan";
+import helmet from "helmet";
 
 const startServer = async () => {
   const app = express();
@@ -16,6 +18,9 @@ const startServer = async () => {
       credentials: true,
     })
   );
+
+  app.use(helmet());
+  app.use(morgan("dev"));
   app.use(express.json());
   app.use(cookieParser());
   app.use(passport.initialize());

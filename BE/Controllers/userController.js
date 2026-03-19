@@ -14,8 +14,12 @@ const getProfile = async (req, res) => {
 const updateProfile = async (req, res) => {
   try {
     const userId = req.user.id;
-    const updatedUser = await userService.updateProfile(userId, req.body);
 
+    if (req.file) {
+      req.body.avatar = req.file.path;
+    }
+
+    const updatedUser = await userService.updateProfile(userId, req.body);
     res
       .status(200)
       .json({ success: true, message: "Profile updated", data: updatedUser });
