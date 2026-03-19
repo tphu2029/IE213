@@ -18,4 +18,6 @@ router.get(
   doctorController.getDoctorDetail
 );
 
+router.post("/", doctorController.createDoctor);
+
 export const doctorRoute = router;

@@ -11,10 +11,35 @@ const getAllDoctors = async () => {
   });
 };
 
-const createDoctor = async (userId) => {
-  if (!userId) {
+const createDoctor = async (data) => {
+  const { user_id, department_id, specialization, experience } = data;
+  console.log(data);
+  // 1. Check user tồn tại
+  const user = await userModel.getUserById(user_id);
+  if (!user) {
+    throw new Error("User không tồn tại");
   }
-  return await doctorModel.createDoctor(doctorData);
+
+  // 2. Check role phải là doctor
+  if (user.role !== "doctor") {
+    throw new Error("User này không phải là doctor");
+  }
+
+  // 3. Check đã có doctor profile chưa
+  const existingDoctor = await doctorModel.findByUserId(user_id);
+  if (existingDoctor) {
+    throw new Error("Doctor profile đã tồn tại");
+  }
+
+  // 4. Tạo doctor
+  const newDoctor = await doctorModel.createDoctor({
+    user_id,
+    department_id,
+    specialization,
+    experience,
+  });
+
+  return newDoctor;
 };
 
 const getDoctorById = async (doctorId) => {
@@ -31,4 +56,5 @@ const getDoctorById = async (doctorId) => {
 export const doctorService = {
   getAllDoctors,
   getDoctorById,
+  createDoctor,
 };

@@ -28,11 +28,15 @@ const Doctor = mongoose.model(COLLECTION_NAME, doctorSchema);
 // --- CÁC HÀM THAO TÁC VỚI DATABASE ---
 
 const createDoctor = async (doctorData) => {
+  console.log(doctorData);
   return await Doctor.create(doctorData);
 };
 
 const getAllDoctors = async () => {
   return await Doctor.find().populate("user_id").populate("department_id");
+};
+const findByUserId = async (userId) => {
+  return await Doctor.findOne({ userId });
 };
 
 const getDoctorById = async (id) => {
@@ -63,4 +67,5 @@ export const doctorModel = {
   updateDoctor,
   deleteDoctor,
   getDoctorsByDepartment,
+  findByUserId,
 };
