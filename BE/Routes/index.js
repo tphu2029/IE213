@@ -24,7 +24,7 @@ router.use("/doctors", doctorRoute);
 router.use("/appointments", appointmentRoute);
 
 //patient
-router.use("/check", patientRoute);
+router.use("/patients", patientRoute);
 
 //departments
 router.use("/departments", departmentRoute);

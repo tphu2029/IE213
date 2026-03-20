@@ -2,26 +2,31 @@ import mongoose from "mongoose";
 
 const COLLECTION_NAME = "doctors";
 
-const doctorSchema = new mongoose.Schema({
-  user_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "users",
-    required: true,
-  },
+const doctorSchema = new mongoose.Schema(
+  {
+    user_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "users",
+      required: true,
+    },
 
-  department_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "departments",
-  },
+    department_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "departments",
+    },
 
-  specialization: {
-    type: String,
-  },
+    specialization: {
+      type: String,
+    },
 
-  experience: {
-    type: Number,
+    experience: {
+      type: Number,
+    },
   },
-});
+  {
+    timestamps: true,
+  }
+);
 
 const Doctor = mongoose.model(COLLECTION_NAME, doctorSchema);
 

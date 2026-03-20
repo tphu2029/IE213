@@ -13,7 +13,7 @@ const getAllDoctors = async () => {
 
 const createDoctor = async (data) => {
   const { user_id, department_id, specialization, experience } = data;
-  console.log(data);
+
   // 1. Check user tồn tại
   const user = await userModel.getUserById(user_id);
   if (!user) {

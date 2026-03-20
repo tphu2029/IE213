@@ -6,10 +6,12 @@ import { patientController } from "../Controllers/patientController.js";
 const router = express.Router();
 
 router.get(
-  "/patients",
+  "/",
   verifyToken,
   checkRole("doctor", "admin"),
   patientController.getPatients
 );
+
+router.post("/", patientController.createPatient);
 
 export const patientRoute = router;
