@@ -31,6 +31,11 @@ const appointmentSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+//Hệ thống sẽ tự động ném ra lỗi nếu cố tình lưu 2 lịch giống nhau.
+appointmentSchema.index(
+  { doctor_id: 1, appointment_date: 1, time_slot: 1 },
+  { unique: true, partialFilterExpression: { status: { $ne: "completed" } } } // Có thể bỏ qua các lịch đã hủy/hoàn thành
+);
 
 const Appointment = mongoose.model(COLLECTION_NAME, appointmentSchema);
 

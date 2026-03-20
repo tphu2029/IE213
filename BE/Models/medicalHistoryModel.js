@@ -27,6 +27,10 @@ const getMedicalHistoryByPatientId = async (patientId) => {
   return await MedicalHistory.findOne({ patient_id: patientId });
 };
 
+const getMedicalHistoryById = async (id) => {
+  return await MedicalHistory.findById(id);
+};
+
 const updateMedicalHistory = async (id, updateData) => {
   return await MedicalHistory.findByIdAndUpdate(id, updateData, { new: true });
 };
@@ -38,6 +42,7 @@ const deleteMedicalHistory = async (id) => {
 export const medicalHistoryModel = {
   createMedicalHistory,
   getMedicalHistoryByPatientId,
+  getMedicalHistoryById,
   updateMedicalHistory,
   deleteMedicalHistory,
 };

@@ -1,30 +1,23 @@
 import { appointmentService } from "../Services/appointmentService.js";
-import dayjs from "dayjs";
+import { patientModel } from "../Models/patientModel.js";
+
+const resolvePatientId = async (userId) => {
+  const patient = await patientModel.getPatientByUserId(userId);
+  if (!patient) {
+    const err = new Error("PATIENT_PROFILE_REQUIRED");
+    throw err;
+  }
+  return patient._id;
+};
 
 const createAppointment = async (req, res) => {
   try {
-    const { appointmentDate } = req.body;
+    // Ngày/giờ khám đã được validate ở validateBookAppointment (appointment_date)
+    const patient_id = await resolvePatientId(req.user.id);
 
-    const patient_id = req.user.id;
-
-    // Kiểm tra ngày đặt lịch
-    if (!appointmentDate) {
-      return res.status(400).json({
-        success: false,
-        message: "Vui lòng cung cấp ngày đặt lịch (appointmentDate)",
-      });
-    }
-
-    const isPast = dayjs(appointmentDate).isBefore(dayjs());
-    if (isPast) {
-      return res.status(400).json({
-        success: false,
-        message: "Không thể đặt lịch khám trong quá khứ!",
-      });
-    }
     const appointment = await appointmentService.bookAppointment(
       patient_id,
-      req.body
+      req.body,
     );
 
     res.status(200).json({
@@ -33,19 +26,32 @@ const createAppointment = async (req, res) => {
       data: appointment,
     });
   } catch (error) {
+    if (error.message === "PATIENT_PROFILE_REQUIRED") {
+      return res.status(403).json({
+        success: false,
+        message:
+          "Tài khoản chưa có hồ sơ bệnh nhân. Vui lòng tạo hồ sơ trước khi đặt lịch.",
+      });
+    }
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
 const getMyHistory = async (req, res) => {
   try {
-    const patient_id = req.user.id;
+    const patient_id = await resolvePatientId(req.user.id);
     const appointments = await appointmentService.getPatientAppointments(
-      patient_id
+      patient_id,
     );
 
     res.status(200).json({ success: true, data: appointments });
   } catch (error) {
+    if (error.message === "PATIENT_PROFILE_REQUIRED") {
+      return res.status(403).json({
+        success: false,
+        message: "Tài khoản chưa có hồ sơ bệnh nhân.",
+      });
+    }
     res.status(500).json({ success: false, message: error.message });
   }
 };

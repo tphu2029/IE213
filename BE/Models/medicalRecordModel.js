@@ -45,8 +45,7 @@ const getMedicalRecordById = async (id) => {
 };
 
 const updateMedicalRecord = async (id, updateData) => {
-  return await MedicalRecord.findBy;
-  IdAndUpdate(id, updateData, { new: true })
+  return await MedicalRecord.findByIdAndUpdate(id, updateData, { new: true })
     .populate("patient_id")
     .populate("doctor_id");
 };

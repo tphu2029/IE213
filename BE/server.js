@@ -16,7 +16,7 @@ const startServer = async () => {
     cors({
       origin: true,
       credentials: true,
-    })
+    }),
   );
 
   app.use(helmet());

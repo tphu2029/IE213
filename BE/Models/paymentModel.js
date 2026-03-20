@@ -41,6 +41,12 @@ const getAllPayments = async () => {
   return await Payment.find().populate("patient_id").populate("appointment_id");
 };
 
+const getPaymentsByPatientId = async (patientId) => {
+  return await Payment.find({ patient_id: patientId })
+    .populate("patient_id")
+    .populate("appointment_id");
+};
+
 const getPaymentById = async (id) => {
   return await Payment.findById(id)
     .populate("patient_id")
@@ -60,6 +66,7 @@ const deletePayment = async (id) => {
 export const paymentModel = {
   createPayment,
   getAllPayments,
+  getPaymentsByPatientId,
   getPaymentById,
   updatePayment,
   deletePayment,

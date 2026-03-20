@@ -39,6 +39,12 @@ const getAllInvoices = async () => {
   return await Invoice.find().populate("patient_id").populate("appointment_id");
 };
 
+const getInvoicesByPatientId = async (patientId) => {
+  return await Invoice.find({ patient_id: patientId })
+    .populate("patient_id")
+    .populate("appointment_id");
+};
+
 const getInvoiceById = async (id) => {
   return await Invoice.findById(id)
     .populate("patient_id")
@@ -57,6 +63,7 @@ const deleteInvoice = async (id) => {
 export const invoiceModel = {
   createInvoice,
   getAllInvoices,
+  getInvoicesByPatientId,
   getInvoiceById,
   updateInvoice,
   deleteInvoice,

@@ -13,6 +13,9 @@ router.post("/register", registerValidate, authController.register);
 
 router.post("/login", loginValidate, authController.login);
 
+/** Cookie httpOnly refreshToken — không cần gửi Bearer access */
+router.post("/refresh", authController.refresh);
+
 router.post("/logout", verifyToken, authController.logout);
 
 export const authRoute = router;

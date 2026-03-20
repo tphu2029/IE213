@@ -18,6 +18,12 @@ const bookAppointmentSchema = Joi.object({
     "any.required": "Vui lòng chọn ngày giờ khám",
   }),
 
+  // Khung giờ (so khớp lịch bác sĩ trong DB)
+  time_slot: Joi.string().trim().min(1).required().messages({
+    "string.empty": "Vui lòng chọn khung giờ khám",
+    "any.required": "Trường time_slot là bắt buộc",
+  }),
+
   // Lý do khám: Không bắt buộc, nhưng nếu nhập thì không được dài quá 500 ký tự để tránh spam
   reason: Joi.string().max(500).allow("").optional().messages({
     "string.max": "Lý do khám không được vượt quá 500 ký tự",

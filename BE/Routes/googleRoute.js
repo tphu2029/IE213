@@ -1,7 +1,7 @@
 import express from "express";
 import passport from "passport";
-import Session from "../Models/sessionModel.js";
-import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
+import { authService } from "../Services/authService.js";
+import { setAuthCookies } from "../utils/authCookies.js";
 
 const router = express.Router();
 
@@ -17,32 +17,30 @@ router.get(
   "/google/callback",
   passport.authenticate("google", { session: false }),
   async (req, res) => {
-    const user = req.user;
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Google authentication failed" });
+      }
 
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
+      const result = await authService.completeOAuthLogin(req.user);
 
-    // lưu session vào DB
-    await Session.create({
-      userId: user._id,
-      refreshToken,
-    });
+      setAuthCookies(res, {
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+      });
 
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "strict",
-    });
-
-    res.json({
-      message: "User logged in successfully",
-      user: {
-        id: user._id,
-        email: user.email,
-        role: user.role,
-      },
-      accessToken,
-    });
+      res.json({
+        message: "User logged in successfully",
+        user: result.user,
+        accessToken: result.accessToken,
+      });
+    } catch (error) {
+      console.error("google callback error", error);
+      return res.status(500).json({
+        message: "Error completing Google login",
+        error: error.message,
+      });
+    }
   },
 );
 

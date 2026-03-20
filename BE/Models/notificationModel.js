@@ -34,9 +34,13 @@ const getNotificationsByUserId = async (userId) => {
 };
 
 const updateNotificationStatus = async (id, status) => {
-  return await Notification.findById
-    .findByIdAndUpdate(id, { status }, { new: true })
-    .populate("user_id");
+  return await Notification.findByIdAndUpdate(id, { status }, { new: true }).populate(
+    "user_id",
+  );
+};
+
+const getNotificationById = async (id) => {
+  return await Notification.findById(id);
 };
 
 const deleteNotification = async (id) => {
@@ -46,6 +50,7 @@ const deleteNotification = async (id) => {
 export const notificationModel = {
   createNotification,
   getNotificationsByUserId,
+  getNotificationById,
   updateNotificationStatus,
   deleteNotification,
 };

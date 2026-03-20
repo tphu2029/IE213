@@ -27,8 +27,7 @@ const getPrescriptionsByRecordId = async (recordId) => {
 };
 
 const updatePrescription = async (id, updateData) => {
-  return await Prescription.findBy;
-  IdAndUpdate(id, updateData, { new: true });
+  return await Prescription.findByIdAndUpdate(id, updateData, { new: true });
 };
 
 const deletePrescription = async (id) => {

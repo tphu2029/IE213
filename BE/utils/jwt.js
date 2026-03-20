@@ -24,3 +24,8 @@ export const generateRefreshToken = (user) => {
     { expiresIn: "7d" }
   );
 };
+
+/** Trả payload đã verify; ném lỗi nếu hết hạn / sai ký */
+export const verifyRefreshToken = (token) => {
+  return jwt.verify(token, REFRESH_SECRET);
+};

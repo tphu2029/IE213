@@ -7,6 +7,13 @@ import { appointmentRoute } from "./appointmentRoute.js";
 import { doctorRoute } from "./doctorRoute.js";
 import { doctorScheduleRoute } from "./doctorScheduleRoute.js";
 import { departmentRoute } from "./departmentRoute.js";
+import { medicalRecordRoute } from "./medicalRecordRoute.js";
+import { medicalHistoryRoute } from "./medicalHistoryRoute.js";
+import { prescriptionRoute } from "./prescriptionRoute.js";
+import { medicineRoute } from "./medicineRoute.js";
+import { invoiceRoute } from "./invoiceRoute.js";
+import { paymentRoute } from "./paymentRoute.js";
+import { notificationRoute } from "./notificationRoute.js";
 
 const router = e.Router();
 
@@ -31,5 +38,18 @@ router.use("/departments", departmentRoute);
 
 //schedules
 router.use("/schedules", doctorScheduleRoute);
+
+// clinical & catalog
+router.use("/medical-records", medicalRecordRoute);
+router.use("/medical-histories", medicalHistoryRoute);
+router.use("/prescriptions", prescriptionRoute);
+router.use("/medicines", medicineRoute);
+
+// billing
+router.use("/invoices", invoiceRoute);
+router.use("/payments", paymentRoute);
+
+// notifications
+router.use("/notifications", notificationRoute);
 
 export const API_v1 = router;
