@@ -1,101 +1,91 @@
-import { Link } from 'react-router';
-import { Phone, Mail, MapPin, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
+import { Link } from "react-router";
+import {
+  Phone,
+  Mail,
+  MapPin,
+  Facebook,
+  Twitter,
+  Instagram,
+  Linkedin,
+} from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export function Footer() {
+  const { t } = useTranslation();
+
   return (
-    <footer className="bg-gray-900 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* About Section */}
-          <div>
-            <h3 className="text-xl font-semibold mb-4">
-              Modern<span className="text-blue-400">Hospital</span>
-            </h3>
-            <p className="text-gray-400 mb-4">
-              Providing exceptional healthcare services with state-of-the-art facilities and compassionate care.
-            </p>
+    <footer className="bg-gray-900 dark:bg-black text-white transition-colors border-t dark:border-gray-800">
+      <div className="max-w-7xl mx-auto px-4 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+          <div className="space-y-4">
+            <h3 className="text-2xl font-bold text-blue-400">ModernHospital</h3>
+            <p className="text-gray-400 text-sm">{t("footer_desc")}</p>
             <div className="flex gap-4">
-              <a href="#" className="text-gray-400 hover:text-blue-400 transition-colors">
-                <Facebook className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-blue-400 transition-colors">
-                <Twitter className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-blue-400 transition-colors">
-                <Instagram className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-blue-400 transition-colors">
-                <Linkedin className="w-5 h-5" />
-              </a>
+              {[Facebook, Twitter, Instagram, Linkedin].map((Icon, i) => (
+                <a
+                  key={i}
+                  href="#"
+                  className="p-2 bg-gray-800 rounded-lg hover:bg-blue-600 transition"
+                >
+                  <Icon size={18} />
+                </a>
+              ))}
             </div>
           </div>
-
-          {/* Quick Links */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-            <ul className="space-y-2">
+            <h3 className="text-lg font-bold mb-6">{t("footer_links")}</h3>
+            <ul className="space-y-3 text-gray-400 text-sm">
               <li>
-                <Link to="/" className="text-gray-400 hover:text-blue-400 transition-colors">
-                  Home
+                <Link to="/" className="hover:text-blue-400">
+                  {t("nav_home")}
                 </Link>
               </li>
               <li>
-                <Link to="/about" className="text-gray-400 hover:text-blue-400 transition-colors">
-                  About Us
+                <Link to="/about" className="hover:text-blue-400">
+                  {t("nav_about")}
                 </Link>
               </li>
               <li>
-                <Link to="/services" className="text-gray-400 hover:text-blue-400 transition-colors">
-                  Services
+                <Link to="/services" className="hover:text-blue-400">
+                  {t("nav_services")}
                 </Link>
               </li>
               <li>
-                <Link to="/doctors" className="text-gray-400 hover:text-blue-400 transition-colors">
-                  Our Doctors
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="text-gray-400 hover:text-blue-400 transition-colors">
-                  Contact
+                <Link to="/lookup" className="hover:text-blue-400">
+                  {t("nav_lookup")}
                 </Link>
               </li>
             </ul>
           </div>
-
-          {/* Services */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Services</h3>
-            <ul className="space-y-2 text-gray-400">
-              <li>Emergency Care</li>
-              <li>Cardiology</li>
-              <li>Neurology</li>
-              <li>Pediatrics</li>
-              <li>Orthopedics</li>
+            <h3 className="text-lg font-bold mb-6">{t("nav_services")}</h3>
+            <ul className="space-y-3 text-gray-400 text-sm">
+              <li>{t("dept_general")}</li>
+              <li>{t("dept_cardiology")}</li>
+              <li>{t("dept_pedia")}</li>
+              <li>{t("dept_surgery")}</li>
             </ul>
           </div>
-
-          {/* Contact Info */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Contact Us</h3>
-            <ul className="space-y-3">
-              <li className="flex items-start gap-3 text-gray-400">
-                <MapPin className="w-5 h-5 mt-1 flex-shrink-0" />
-                <span>123 Healthcare Avenue, Medical City, MC 12345</span>
-              </li>
-              <li className="flex items-center gap-3 text-gray-400">
-                <Phone className="w-5 h-5 flex-shrink-0" />
+            <h3 className="text-lg font-bold mb-6">{t("footer_contact")}</h3>
+            <div className="space-y-4 text-sm text-gray-400">
+              <div className="flex items-start gap-3">
+                <MapPin size={18} className="text-blue-400" />
+                <span>123 Healthcare Ave, Medical City</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <Phone size={18} className="text-blue-400" />
                 <span>(555) 123-4567</span>
-              </li>
-              <li className="flex items-center gap-3 text-gray-400">
-                <Mail className="w-5 h-5 flex-shrink-0" />
+              </div>
+              <div className="flex items-center gap-3">
+                <Mail size={18} className="text-blue-400" />
                 <span>info@modernhospital.com</span>
-              </li>
-            </ul>
+              </div>
+            </div>
           </div>
         </div>
-
-        <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-          <p>&copy; 2026 Modern Hospital. All rights reserved.</p>
+        <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-500 text-xs">
+          <p>{t("copyright")}</p>
         </div>
       </div>
     </footer>

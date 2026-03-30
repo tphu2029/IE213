@@ -1,96 +1,81 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import { authService } from "../services";
 
-export interface User {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  phone?: string;
-}
-
+// 1. Thêm register vào Interface
 interface AuthContextType {
-  user: User | null;
+  user: any;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, firstName: string, lastName: string, phone?: string) => Promise<void>;
+  register: (data: any) => Promise<void>;
   logout: () => void;
+  updateUser: (data: any) => void;
   isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in on mount
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
+    const init = async () => {
+      const token = localStorage.getItem("accessToken");
+      if (token) {
+        try {
+          const { data } = await authService.getProfile("me");
+          setUser(data.data);
+        } catch {
+          localStorage.removeItem("accessToken");
+        }
+      }
+      setIsLoading(false);
+    };
+    init();
   }, []);
 
   const login = async (email: string, password: string) => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Check if user exists in localStorage
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const foundUser = users.find((u: any) => u.email === email && u.password === password);
-    
-    if (!foundUser) {
-      throw new Error('Invalid email or password');
-    }
-
-    const { password: _, ...userWithoutPassword } = foundUser;
-    setUser(userWithoutPassword);
-    localStorage.setItem('user', JSON.stringify(userWithoutPassword));
+    const { data } = await authService.login({ email, password });
+    localStorage.setItem("accessToken", data.accessToken);
+    setUser(data.user);
   };
 
-  const register = async (email: string, password: string, firstName: string, lastName: string, phone?: string) => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Check if user already exists
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    if (users.some((u: any) => u.email === email)) {
-      throw new Error('User with this email already exists');
-    }
-
-    const newUser = {
-      id: Date.now().toString(),
-      email,
-      password,
-      firstName,
-      lastName,
-      phone,
-    };
-
-    users.push(newUser);
-    localStorage.setItem('users', JSON.stringify(users));
-
-    const { password: _, ...userWithoutPassword } = newUser;
-    setUser(userWithoutPassword);
-    localStorage.setItem('user', JSON.stringify(userWithoutPassword));
+  // 2. Định nghĩa hàm register
+  const register = async (formData: any) => {
+    await authService.register(formData);
   };
 
   const logout = () => {
+    authService.logout();
+    localStorage.removeItem("accessToken");
     setUser(null);
-    localStorage.removeItem('user');
   };
 
+  const updateUser = (data: any) => setUser(data);
+
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, isLoading }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        login,
+        register, // 3. Đưa register vào Provider
+        logout,
+        updateUser,
+        isLoading,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
 
-export function useAuth() {
+export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error("useAuth must be used within AuthProvider");
   return context;
-}
+};

@@ -1,193 +1,150 @@
-import { Activity, Heart, Brain, Baby, Bone, Eye, Stethoscope, Syringe, Users, Clock, Award, CheckCircle } from 'lucide-react';
-import { ImageWithFallback } from '../components/figma/ImageWithFallback';
+import { DEPARTMENTS_DATA } from "../data/departmentsData";
+import { Link } from "react-router";
+import { ArrowRight, CheckCircle2, AlertCircle, Info } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export function Services() {
-  const departments = [
-    {
-      icon: Activity,
-      title: 'Emergency Care',
-      description: 'Round-the-clock emergency services with a dedicated trauma center and rapid response team.',
-      features: ['24/7 Availability', 'Trauma Center Level II', 'Air Ambulance Service', 'Rapid Response Team'],
-      image: 'https://images.unsplash.com/photo-1721114989769-0423619f03d2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxob3NwaXRhbCUyMGVtZXJnZW5jeSUyMHJvb218ZW58MXx8fHwxNzcyNDkxNjU2fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-    },
-    {
-      icon: Heart,
-      title: 'Cardiology',
-      description: 'Comprehensive cardiac care including diagnostics, interventional procedures, and cardiac surgery.',
-      features: ['Cardiac Catheterization', 'Pacemaker Implantation', 'Open Heart Surgery', 'Cardiac Rehabilitation'],
-      image: 'https://images.unsplash.com/photo-1656337426914-5e5ba162d606?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtZWRpY2FsJTIwbGFib3JhdG9yeSUyMGVxdWlwbWVudHxlbnwxfHx8fDE3NzI1MDgxNTV8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-    },
-    {
-      icon: Brain,
-      title: 'Neurology',
-      description: 'Advanced treatment for brain, spine, and nervous system disorders with cutting-edge technology.',
-      features: ['Stroke Center', 'Neurosurgery', 'Epilepsy Treatment', 'Movement Disorders'],
-      image: 'https://images.unsplash.com/photo-1725693485717-dbf8eac577c6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxob3NwaXRhbCUyMHN1cmdlcnklMjBvcGVyYXRpbmclMjByb29tfGVufDF8fHx8MTc3MjQ3MTA3M3ww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-    },
-    {
-      icon: Baby,
-      title: 'Pediatrics',
-      description: 'Specialized care for children from newborns to adolescents with a child-friendly environment.',
-      features: ['Neonatal ICU', 'Pediatric Surgery', 'Childhood Vaccinations', 'Growth & Development'],
-      image: 'https://images.unsplash.com/photo-1758691463331-2ac00e6f676f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwZWRpYXRyaWMlMjBkb2N0b3IlMjBjaGlsZHxlbnwxfHx8fDE3NzI1MTM0MDZ8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-    },
-    {
-      icon: Bone,
-      title: 'Orthopedics',
-      description: 'Expert care for bones, joints, and muscles including sports medicine and joint replacement.',
-      features: ['Joint Replacement', 'Sports Medicine', 'Spine Surgery', 'Trauma Care'],
-    },
-    {
-      icon: Eye,
-      title: 'Ophthalmology',
-      description: 'Complete eye care services including cataract surgery and vision correction procedures.',
-      features: ['Cataract Surgery', 'LASIK', 'Retina Care', 'Glaucoma Treatment'],
-    },
-    {
-      icon: Stethoscope,
-      title: 'Internal Medicine',
-      description: 'Comprehensive care for adult patients with chronic diseases and complex medical conditions.',
-      features: ['Diabetes Management', 'Hypertension Care', 'Preventive Medicine', 'Health Screenings'],
-    },
-    {
-      icon: Syringe,
-      title: 'Surgery',
-      description: 'Advanced surgical procedures including minimally invasive and robotic surgery options.',
-      features: ['Robotic Surgery', 'Laparoscopic Surgery', 'General Surgery', 'Surgical ICU'],
-    },
-  ];
+  const { t } = useTranslation();
 
   return (
-    <div>
-      {/* Hero Section */}
-      <section className="relative h-[400px] flex items-center">
-        <div className="absolute inset-0">
-          <ImageWithFallback
-            src="https://images.unsplash.com/photo-1584982751601-97dcc096659c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtZWRpY2FsJTIwdGVhbSUyMGRvY3RvcnN8ZW58MXx8fHwxNzcyNDkzNDgyfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
-            alt="Medical Services"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-blue-900/80"></div>
-        </div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl text-white mb-4">Our Medical Services</h1>
-          <p className="text-xl text-white/90 max-w-2xl mx-auto">
-            Comprehensive healthcare services delivered with expertise and compassion
+    <div className="bg-gray-50 dark:bg-gray-950 min-h-screen pt-20 transition-colors duration-300">
+      {/* SECTION 1: HERO - TIÊU ĐỀ TRANG */}
+      <section className="bg-blue-600 dark:bg-blue-700 py-20 text-center text-white relative overflow-hidden">
+        {/* Họa tiết trang trí phía sau */}
+        <div className="absolute top-0 left-0 w-64 h-64 bg-white/10 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-400/20 rounded-full translate-x-1/3 translate-y-1/3 blur-3xl"></div>
+
+        <div className="relative z-10 max-w-4xl mx-auto px-4">
+          <h1 className="text-4xl md:text-5xl font-black mb-6 animate-in slide-in-from-top duration-700">
+            {t("services_h2")}
+          </h1>
+          <p className="text-xl text-blue-100 opacity-90 leading-relaxed animate-in fade-in duration-1000 delay-200">
+            {t("services_p")}
           </p>
         </div>
       </section>
 
-      {/* Services Overview */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl text-gray-900 mb-4">Our Departments</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              We offer a full range of medical specialties and subspecialties
-            </p>
-          </div>
-          <div className="space-y-16">
-            {departments.map((dept, index) => (
-              <div
-                key={index}
-                className={`grid grid-cols-1 lg:grid-cols-2 gap-8 items-center ${
-                  index % 2 === 1 ? 'lg:flex-row-reverse' : ''
-                }`}
+      {/* SECTION 2: GRID DANH SÁCH 14 CHUYÊN KHOA */}
+      <section className="max-w-7xl mx-auto px-4 py-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {DEPARTMENTS_DATA.map((dept) => (
+            <div
+              key={dept.id}
+              className="group bg-white dark:bg-gray-900 rounded-[32px] p-8 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 flex flex-col justify-between"
+            >
+              <div>
+                {/* Icon khoa */}
+                <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400 mb-6 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+                  <dept.icon size={32} />
+                </div>
+
+                {/* Tên khoa */}
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-1 group-hover:text-blue-600 transition-colors">
+                  {dept.name}
+                </h3>
+                <p className="text-sm text-blue-500 dark:text-blue-400 font-bold mb-4 uppercase tracking-wider italic opacity-80">
+                  {dept.enName}
+                </p>
+
+                {/* Mô tả ngắn */}
+                <p className="text-gray-600 dark:text-gray-400 text-sm mb-6 leading-relaxed">
+                  {dept.description}
+                </p>
+
+                {/* Thông tin triệu chứng (Dựa trên mô tả PDF) */}
+                <div className="bg-gray-50 dark:bg-gray-950 p-5 rounded-2xl mb-8 border-l-4 border-blue-500 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/10 transition-colors">
+                  <div className="flex items-center gap-2 mb-3 text-blue-700 dark:text-blue-300 font-bold text-xs uppercase tracking-widest">
+                    <AlertCircle size={14} />
+                    <span>{t("symptoms")} điển hình</span>
+                  </div>
+                  <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed italic">
+                    "{dept.symptoms}"
+                  </p>
+                </div>
+              </div>
+
+              {/* Nút hành động - Tích hợp chuyển khoa sang đặt lịch */}
+              <Link
+                to={`/book-appointment?dept=${dept.id}`}
+                className="flex items-center justify-center gap-2 w-full py-4 bg-gray-900 dark:bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-600 dark:hover:bg-blue-700 transition-all shadow-lg group-hover:shadow-blue-200 dark:group-hover:shadow-none"
               >
-                <div className={index % 2 === 1 ? 'lg:order-2' : ''}>
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <dept.icon className="w-8 h-8 text-blue-600" />
-                    </div>
-                    <h3 className="text-3xl text-gray-900">{dept.title}</h3>
-                  </div>
-                  <p className="text-lg text-gray-700 mb-6">{dept.description}</p>
-                  <div className="space-y-2">
-                    {dept.features.map((feature, idx) => (
-                      <div key={idx} className="flex items-center gap-3">
-                        <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0" />
-                        <span className="text-gray-700">{feature}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                {dept.image && (
-                  <div className={`rounded-xl overflow-hidden shadow-lg ${index % 2 === 1 ? 'lg:order-1' : ''}`}>
-                    <ImageWithFallback
-                      src={dept.image}
-                      alt={dept.title}
-                      className="w-full h-[400px] object-cover"
-                    />
-                  </div>
-                )}
-                {!dept.image && (
-                  <div className={`bg-gradient-to-br from-blue-100 to-blue-50 rounded-xl p-12 flex items-center justify-center ${index % 2 === 1 ? 'lg:order-1' : ''}`}>
-                    <dept.icon className="w-32 h-32 text-blue-600 opacity-20" />
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+                {t("book_now")}{" "}
+                <ArrowRight
+                  size={18}
+                  className="group-hover:translate-x-1 transition-transform"
+                />
+              </Link>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* Why Choose Our Services */}
-      <section className="py-16 bg-blue-600">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl text-white mb-4">Why Choose Our Services</h2>
-            <p className="text-xl text-white/90 max-w-2xl mx-auto">
-              We combine medical excellence with compassionate care
-            </p>
+      {/* SECTION 3: MẸO CHỌN KHOA NHANH (Mục 14 PDF) */}
+      <section className="bg-white dark:bg-gray-900 py-20 border-t dark:border-gray-800">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <div className="inline-flex items-center gap-2 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-4 py-2 rounded-full text-sm font-bold mb-6">
+            <Info size={16} /> Mẹo chọn khoa nhanh
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white/10 backdrop-blur-sm p-8 rounded-xl text-center">
-              <div className="flex justify-center mb-4">
-                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
-                  <Award className="w-8 h-8 text-blue-600" />
-                </div>
-              </div>
-              <h3 className="text-xl text-white mb-3">Expert Medical Team</h3>
-              <p className="text-white/90">
-                Board-certified physicians with years of experience in their specialties
+          <h2 className="text-3xl font-bold dark:text-white mb-10">
+            Bạn vẫn chưa biết nên chọn khoa nào?
+          </h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
+            <div className="p-4 border dark:border-gray-800 rounded-2xl flex items-center gap-4 dark:text-gray-300">
+              <span className="text-2xl">❓</span>
+              <p>
+                Không biết bệnh →{" "}
+                <strong className="text-blue-600">Nội tổng quát</strong>
               </p>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm p-8 rounded-xl text-center">
-              <div className="flex justify-center mb-4">
-                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
-                  <Users className="w-8 h-8 text-blue-600" />
-                </div>
-              </div>
-              <h3 className="text-xl text-white mb-3">Advanced Technology</h3>
-              <p className="text-white/90">
-                State-of-the-art medical equipment and innovative treatment options
+            <div className="p-4 border dark:border-gray-800 rounded-2xl flex items-center gap-4 dark:text-gray-300">
+              <span className="text-2xl">👶</span>
+              <p>
+                Trẻ em (dưới 16 tuổi) →{" "}
+                <strong className="text-blue-600">Nhi khoa</strong>
               </p>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm p-8 rounded-xl text-center">
-              <div className="flex justify-center mb-4">
-                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
-                  <Clock className="w-8 h-8 text-blue-600" />
-                </div>
-              </div>
-              <h3 className="text-xl text-white mb-3">24/7 Emergency Care</h3>
-              <p className="text-white/90">
-                Round-the-clock emergency services with rapid response capabilities
+            <div className="p-4 border dark:border-gray-800 rounded-2xl flex items-center gap-4 dark:text-gray-300">
+              <span className="text-2xl">🤕</span>
+              <p>
+                Tai nạn / Chấn thương →{" "}
+                <strong className="text-blue-600">Ngoại khoa / Cấp cứu</strong>
+              </p>
+            </div>
+            <div className="p-4 border dark:border-gray-800 rounded-2xl flex items-center gap-4 dark:text-gray-300">
+              <span className="text-2xl">🤢</span>
+              <p>
+                Đau bụng, tiêu chảy →{" "}
+                <strong className="text-blue-600">Tiêu hóa</strong>
               </p>
             </div>
           </div>
+
+          <Link
+            to="/lookup"
+            className="mt-12 inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 font-bold hover:underline"
+          >
+            Sử dụng công cụ tra cứu thông minh <ArrowRight size={18} />
+          </Link>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl text-gray-900 mb-4">Ready to Get Started?</h2>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Book an appointment with one of our specialists today
+      {/* SECTION 4: CTA CUỐI TRANG */}
+      <section className="py-20 text-center">
+        <div className="max-w-2xl mx-auto px-4 bg-blue-50 dark:bg-blue-900/20 p-10 rounded-[40px] border border-blue-100 dark:border-blue-800">
+          <h2 className="text-2xl font-bold dark:text-white mb-4">
+            Bạn cần tư vấn trực tiếp?
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-8">
+            Tổng đài hỗ trợ đặt lịch và giải đáp thắc mắc của chúng tôi hoạt
+            động 24/7.
           </p>
-          <button className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors">
-            Schedule an Appointment
-          </button>
+          <a
+            href="tel:5551234567"
+            className="text-2xl font-black text-blue-600 dark:text-blue-400 hover:scale-105 transition-transform inline-block"
+          >
+            (555) 123-4567
+          </a>
         </div>
       </section>
     </div>
