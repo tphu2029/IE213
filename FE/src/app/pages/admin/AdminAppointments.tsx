@@ -26,8 +26,8 @@ export function AdminAppointments() {
       <div className="space-y-4">
         {appointments
           .filter(apt =>
-            apt.doctorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            apt.reason.toLowerCase().includes(searchTerm.toLowerCase())
+            (apt.doctorName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (apt.reason || '').toLowerCase().includes(searchTerm.toLowerCase())
           )
           .map(appointment => (
             <div key={appointment.id} className="border border-gray-200 rounded-lg p-6">

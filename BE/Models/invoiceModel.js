@@ -60,6 +60,37 @@ const deleteInvoice = async (id) => {
   return await Invoice.findByIdAndDelete(id);
 };
 
+// DASHBOARD
+const getTotalRevenue = async () => {
+  const result = await Invoice.aggregate([
+    { $match: { status: "paid" } },
+    { $group: { _id: null, total: { $sum: "$total_amount" } } },
+  ]);
+  return result.length > 0 ? result[0].total : 0;
+};
+
+const getRevenueByMonth = async () => {
+  const currentYear = new Date().getFullYear();
+  return await Invoice.aggregate([
+    {
+      $match: {
+        status: "paid",
+        created_at: {
+          $gte: new Date(`${currentYear}-01-01`),
+          $lte: new Date(`${currentYear}-12-31T23:59:59.999Z`),
+        },
+      },
+    },
+    {
+      $group: {
+        _id: { $month: "$created_at" },
+        total: { $sum: "$total_amount" },
+      },
+    },
+    { $sort: { _id: 1 } },
+  ]);
+};
+
 export const invoiceModel = {
   createInvoice,
   getAllInvoices,
@@ -67,4 +98,6 @@ export const invoiceModel = {
   getInvoiceById,
   updateInvoice,
   deleteInvoice,
+  getTotalRevenue,
+  getRevenueByMonth,
 };

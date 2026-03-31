@@ -64,7 +64,11 @@ const getDoctorsByDepartment = async (departmentId) => {
   return await Doctor.find({ department_id: departmentId }).populate("user_id");
 };
 
-// --- EXPORT TƯƠNG TỰ USER ---
+// DASHBOARD
+const countDoctors = async () => {
+  return await Doctor.countDocuments();
+};
+
 export const doctorModel = {
   createDoctor,
   getAllDoctors,
@@ -73,4 +77,5 @@ export const doctorModel = {
   deleteDoctor,
   getDoctorsByDepartment,
   findByUserId,
+  countDoctors,
 };

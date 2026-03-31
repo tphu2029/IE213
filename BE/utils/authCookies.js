@@ -1,4 +1,4 @@
-/** Tùy chỉnh cookie auth — dùng chung cho login thường, Google, refresh */
+
 export const AUTH_COOKIE_OPTIONS = {
   httpOnly: true,
   secure: false,

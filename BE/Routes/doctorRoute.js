@@ -7,17 +7,16 @@ const router = e.Router();
 router.get(
   "/",
   verifyToken,
-  checkRole("doctor", "admin"),
   doctorController.getDoctors
 );
 
 router.get(
   "/:id",
   verifyToken,
-  checkRole("doctor", "admin"),
   doctorController.getDoctorDetail
 );
 
-router.post("/", doctorController.createDoctor);
+router.post("/", verifyToken,
+  checkRole("admin"),doctorController.createDoctor);
 
 export const doctorRoute = router;

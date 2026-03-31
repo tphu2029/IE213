@@ -34,7 +34,7 @@ const appointmentSchema = new mongoose.Schema(
 //Hệ thống sẽ tự động ném ra lỗi nếu cố tình lưu 2 lịch giống nhau.
 appointmentSchema.index(
   { doctor_id: 1, appointment_date: 1, time_slot: 1 },
-  { unique: true, partialFilterExpression: { status: { $ne: "completed" } } } // Có thể bỏ qua các lịch đã hủy/hoàn thành
+  { unique: true, partialFilterExpression: { status: { $ne: "completed" } } } 
 );
 
 const Appointment = mongoose.model(COLLECTION_NAME, appointmentSchema);
@@ -63,13 +63,24 @@ const deleteAppointment = async (id) => {
   return await Appointment.findByIdAndDelete(id);
 };
 
-// Các hàm đặc thù cho Appointment
+// Các hàm Appointment
 const getAppointmentsByDoctor = async (doctorId) => {
   return await Appointment.find({ doctor_id: doctorId });
 };
 
 const getAppointmentsByPatient = async (patientId) => {
   return await Appointment.find({ patient_id: patientId });
+};
+
+// CÁC HÀM THỐNG KÊ 
+const countAppointments = async () => {
+  return await Appointment.countDocuments();
+};
+
+const getAppointmentsCountByStatus = async () => {
+  return await Appointment.aggregate([
+    { $group: { _id: "$status", count: { $sum: 1 } } },
+  ]);
 };
 
 export const appointmentModel = {
@@ -80,4 +91,6 @@ export const appointmentModel = {
   deleteAppointment,
   getAppointmentsByDoctor,
   getAppointmentsByPatient,
+  countAppointments,
+  getAppointmentsCountByStatus,
 };

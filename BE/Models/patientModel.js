@@ -48,10 +48,16 @@ const deletePatient = async (id) => {
   return await Patient.findByIdAndDelete(id);
 };
 
+// DASHBOARD
+const countPatients = async () => {
+  return await Patient.countDocuments();
+};
+
 export const patientModel = {
   createPatient,
   getPatientById,
   getPatientByUserId,
   updatePatient,
   deletePatient,
+  countPatients,
 };

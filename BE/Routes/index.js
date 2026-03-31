@@ -14,6 +14,7 @@ import { medicineRoute } from "./medicineRoute.js";
 import { invoiceRoute } from "./invoiceRoute.js";
 import { paymentRoute } from "./paymentRoute.js";
 import { notificationRoute } from "./notificationRoute.js";
+import { reportRoute } from "./reportRoute.js";
 
 const router = e.Router();
 
@@ -51,5 +52,8 @@ router.use("/payments", paymentRoute);
 
 // notifications
 router.use("/notifications", notificationRoute);
+
+// reports
+router.use("/reports", reportRoute);
 
 export const API_v1 = router;
