@@ -79,7 +79,7 @@ export function Header() {
         <div className="flex items-center gap-2 sm:gap-4">
           {/* Nút Đặt lịch (Desktop) */}
           <Link
-            to="/book-appointment"
+            to="/book"
             className="hidden md:flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition shadow-lg shadow-blue-200 dark:shadow-none"
           >
             <Calendar size={16} /> {t("nav_booking")}
@@ -139,14 +139,14 @@ export function Header() {
                     </p>
                   </div>
                   <Link
-                    to="/profile"
+                    to="/users"
                     className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800"
                     onClick={() => setIsProfileOpen(false)}
                   >
                     {t("profile_health")}
                   </Link>
                   <Link
-                    to="/dashboard"
+                    to="/my-appointments"
                     className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800"
                     onClick={() => setIsProfileOpen(false)}
                   >
@@ -202,7 +202,7 @@ export function Header() {
             </Link>
           ))}
           <Link
-            to="/book-appointment"
+            to="/book"
             className="block p-3 rounded-xl text-base font-bold bg-blue-600 text-white text-center"
             onClick={() => setIsMenuOpen(false)}
           >

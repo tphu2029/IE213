@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import { DEPARTMENTS_DATA } from "../data/departmentsData";
 import { DOCTORS_DATA } from "../data/doctorsData";
+import { hospitalService } from "../services"; //
 import {
   Calendar,
   Clock,
@@ -39,13 +40,19 @@ export function BookAppointment() {
     (doc) => doc.deptId === formData.department_id,
   );
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.doctor_id || !formData.appointment_date) {
       toast.error("Vui lòng chọn bác sĩ và ngày khám");
       return;
     }
-    toast.success("Đặt lịch thành công!");
+
+    try {
+      await hospitalService.bookAppointment(formData);
+      toast.success("Đặt lịch thành công!");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Lỗi khi đặt lịch");
+    }
   };
 
   return (

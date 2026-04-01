@@ -40,7 +40,6 @@ export const router = createBrowserRouter([
     path: "/",
     Component: RootLayout,
     children: [
-      // --- Public Routes ---
       { index: true, Component: Home },
       { path: "about", Component: About },
       { path: "services", Component: Services },
@@ -49,11 +48,11 @@ export const router = createBrowserRouter([
       { path: "login", Component: Login },
       { path: "register", Component: Register },
       { path: "medicines", Component: Medicines },
-      { path: "lookup", Component: SymptomLookup }, // Trang tra cứu thủ công + AI sơ bộ
+      { path: "lookup", Component: SymptomLookup },
 
       // --- Patient Routes (Yêu cầu đăng nhập) ---
       {
-        path: "dashboard",
+        path: "my-appointments",
         element: (
           <ProtectedRoute>
             <Dashboard />
@@ -61,7 +60,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "book-appointment",
+        path: "book",
         element: (
           <ProtectedRoute>
             <BookAppointment />
@@ -93,7 +92,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "profile",
+        path: "users",
         element: (
           <ProtectedRoute>
             <Profile />

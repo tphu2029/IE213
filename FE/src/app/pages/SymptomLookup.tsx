@@ -62,7 +62,7 @@ export function SymptomLookup() {
               {results.map((dept) => (
                 <Link
                   key={dept.id}
-                  to={`/book-appointment?dept=${dept.id}`}
+                  to={`/book?dept=${dept.id}`}
                   className="p-6 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-3xl hover:border-blue-500 transition shadow-sm flex items-center gap-6 group"
                 >
                   <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center text-blue-600 shrink-0 group-hover:scale-110 transition">

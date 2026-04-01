@@ -13,11 +13,10 @@ export const authService = {
   login: (creds: any) => api.post("/auth/login", creds),
   register: (data: any) => api.post("/auth/register", data),
   logout: () => api.post("/auth/logout"),
-  getProfile: (id: string | "me") => api.get(`/users/${id}`),
-  updateProfile: (formData: FormData) =>
-    api.patch("/users/", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    }),
+  // Nếu là "me" thì gọi thẳng vào /users/
+  getProfile: (id: string | "me") =>
+    api.get(id === "me" ? "/users/" : `/users/${id}`),
+  updateProfile: (data: any) => api.patch("/users/", data),
 };
 
 // HOSPITAL (DEPT, DOCTOR, SCHEDULE, APPOINTMENT)

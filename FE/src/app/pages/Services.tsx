@@ -65,7 +65,7 @@ export function Services() {
 
               {/* Nút hành động - Tích hợp chuyển khoa sang đặt lịch */}
               <Link
-                to={`/book-appointment?dept=${dept.id}`}
+                to={`/book?dept=${dept.id}`}
                 className="flex items-center justify-center gap-2 w-full py-4 bg-gray-900 dark:bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-600 dark:hover:bg-blue-700 transition-all shadow-lg group-hover:shadow-blue-200 dark:group-hover:shadow-none"
               >
                 {t("book_now")}{" "}

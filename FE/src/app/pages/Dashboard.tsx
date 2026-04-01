@@ -13,8 +13,11 @@ export function Dashboard() {
     if (user) {
       hospitalService
         .getMyAppointments()
-        .then((res) => setAppointments(res.data.data))
-        .catch(() => {});
+        .then((res) => {
+          const data = res.data.data || res.data;
+          setAppointments(Array.isArray(data) ? data : []);
+        })
+        .catch((err) => console.error("Dashboard load error:", err));
     }
   }, [user]);
 
@@ -38,7 +41,7 @@ export function Dashboard() {
           </p>
         </div>
         <Link
-          to="/book-appointment"
+          to="/book"
           className="bg-white p-6 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-500 hover:border-blue-400 hover:text-blue-600 transition"
         >
           <Plus size={40} className="mb-2" />
