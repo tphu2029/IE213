@@ -6,8 +6,8 @@ export const authService = {
   register: (data: any) => api.post("/auth/register", data),
   logout: () => api.post("/auth/logout"),
   // Lấy profile user (dùng cho trang cá nhân)
-  getProfile: (id: string | "me") =>
-    api.get(id === "me" ? "/users/" : `/users/${id}`),
+  getProfile: () => api.get("/users/me"),
+
   // Cập nhật thông tin cơ bản (username, phone, avatar)
   updateProfile: (data: any) => api.patch("/users/", data),
 };

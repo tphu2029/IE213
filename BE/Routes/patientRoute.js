@@ -1,17 +1,11 @@
 import express from "express";
 import { verifyToken } from "../Middlewares/authMiddleware.js";
-import { checkRole } from "../Middlewares/roleMiddleware.js";
 import { patientController } from "../Controllers/patientController.js";
 
 const router = express.Router();
 
-router.get(
-  "/",
-  verifyToken,
-  checkRole("doctor", "admin"),
-  patientController.getPatients
-);
-
-router.post("/", patientController.createPatient);
+// Thêm verifyToken vào đây để lấy được thông tin user từ JWT
+router.post("/", verifyToken, patientController.createPatient);
+router.get("/", verifyToken, patientController.getPatients);
 
 export const patientRoute = router;

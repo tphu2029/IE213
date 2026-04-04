@@ -25,25 +25,25 @@ export function Home() {
   const servicesPreview = [
     {
       icon: Activity,
-      title: "Emergency Care",
+      title: t("dept_general"),
       desc: "24/7 rapid response.",
       img: "https://images.unsplash.com/photo-1721114989769-0423619f03d2?q=80&w=1080",
     },
     {
       icon: Heart,
-      title: "Cardiology",
+      title: t("dept_cardiology"),
       desc: "Heart health experts.",
       img: "https://images.unsplash.com/photo-1656337426914-5e5ba162d606?q=80&w=1080",
     },
     {
       icon: Brain,
-      title: "Neurology",
+      title: t("dept_neurology"),
       desc: "Brain & Nerve care.",
       img: "https://images.unsplash.com/photo-1725693485717-dbf8eac577c6?q=80&w=1080",
     },
     {
       icon: Baby,
-      title: "Pediatrics",
+      title: t("dept_pedia"),
       desc: "Child healthcare specialists.",
       img: "https://images.unsplash.com/photo-1758691463331-2ac00e6f676f?q=80&w=1080",
     },
@@ -51,7 +51,6 @@ export function Home() {
 
   return (
     <div className="bg-white dark:bg-gray-950 transition-colors pb-24">
-      {/* Hero */}
       <section className="relative h-[700px] flex items-center overflow-hidden">
         <div className="absolute inset-0">
           <ImageWithFallback
@@ -81,7 +80,6 @@ export function Home() {
         </div>
       </section>
 
-      {/* Stats */}
       <section className="py-24 max-w-7xl mx-auto px-4 grid grid-cols-2 lg:grid-cols-4 gap-12">
         {stats.map((stat, i) => (
           <div key={i} className="text-center group">
@@ -98,7 +96,6 @@ export function Home() {
         ))}
       </section>
 
-      {/* Services Preview */}
       <section className="py-24 bg-gray-50 dark:bg-gray-900/50">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <h2 className="text-5xl font-black dark:text-white mb-4 italic">
@@ -139,7 +136,6 @@ export function Home() {
         </div>
       </section>
 
-      {/* CTA - KHẮC PHỤC NÚT nav_contact TẠI ĐÂY */}
       <section className="py-24 px-4 max-w-7xl mx-auto">
         <div className="bg-blue-600 rounded-[60px] p-20 text-center text-white relative overflow-hidden shadow-2xl">
           <h2 className="text-5xl font-black mb-6 italic">{t("cta_h2")}</h2>

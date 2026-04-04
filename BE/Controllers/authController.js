@@ -8,94 +8,59 @@ import {
 const register = async (req, res) => {
   try {
     const result = await authService.register(req.body);
-    res.status(200).json({ message: "User registered successfully", result });
+    res.status(201).json({ message: "User registered successfully", result });
   } catch (error) {
+    // Bắt lỗi trùng Email (Tránh lỗi 500)
     if (error.message === "Email already exists") {
-      return res.status(409).json({
-        message: "Email already exists",
-        error: error.message,
-      });
+      return res.status(409).json({ message: "Email này đã được đăng ký!" });
     }
-    res.status(500).json({ message: "Error registering user", error });
+    res
+      .status(500)
+      .json({ message: "Lỗi hệ thống khi đăng ký", error: error.message });
   }
 };
 
 const login = async (req, res) => {
   try {
     const result = await authService.login(req.body);
-
     setAuthCookies(res, {
       accessToken: result.accessToken,
       refreshToken: result.refreshToken,
     });
-
     res.status(200).json({
-      message: "User logged in successfully",
+      message: "Logged in",
       user: result.user,
       accessToken: result.accessToken,
     });
   } catch (error) {
-    if (error.message === "USE_GOOGLE_LOGIN") {
-      return res.status(400).json({
-        message:
-          "Tài khoản này đăng ký qua Google. Vui lòng đăng nhập bằng Google.",
-        error: error.message,
-      });
-    }
-    if (error.message === "User not found" || error.message === "Invalid password") {
-      return res.status(401).json({
-        message: "Email hoặc mật khẩu không đúng",
-        error: error.message,
-      });
-    }
-    res.status(500).json({
-      message: "Error logging in user",
-      error: error.message,
-    });
-  }
-};
-
-/** Lấy access token mới từ cookie refreshToken (không cần Bearer access) */
-const refresh = async (req, res) => {
-  try {
-    const token = req.cookies?.refreshToken;
-    const result = await authService.refreshAccessToken(token);
-
-    res.cookie("accessToken", result.accessToken, AUTH_COOKIE_OPTIONS);
-
-    res.status(200).json({
-      message: "Token refreshed",
-      user: result.user,
-      accessToken: result.accessToken,
-    });
-  } catch (error) {
-    return res.status(401).json({
-      message: error.message || "Refresh failed",
-    });
+    res.status(401).json({ message: error.message || "Đăng nhập thất bại" });
   }
 };
 
 const logout = async (req, res) => {
   try {
     const token = req.cookies?.refreshToken;
-
-    await authService.logout(token);
+    if (token) await authService.logout(token);
 
     clearAuthCookies(res);
-
-    return res.sendStatus(204);
+    return res.status(200).json({ message: "Logout successful" });
   } catch (error) {
-    console.error("logout error", error);
-    return res.status(500).json({
-      message: "Logout failed",
-      error: error.message,
-    });
+    clearAuthCookies(res); // Luôn clear cookies
+    return res.status(200).json({ message: "Forced logout successful" });
   }
 };
 
-export const authController = {
-  register,
-  login,
-  refresh,
-  logout,
+const refresh = async (req, res) => {
+  try {
+    const token = req.cookies?.refreshToken;
+    const result = await authService.refreshAccessToken(token);
+    res.cookie("accessToken", result.accessToken, AUTH_COOKIE_OPTIONS);
+    res
+      .status(200)
+      .json({ accessToken: result.accessToken, user: result.user });
+  } catch (error) {
+    res.status(401).json({ message: "Refresh session expired" });
+  }
 };
+
+export const authController = { register, login, refresh, logout };

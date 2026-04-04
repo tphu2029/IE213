@@ -1,28 +1,40 @@
 import { userModel } from "../Models/userModel.js";
 import { patientModel } from "../Models/patientModel.js";
-const getAllPatients = async () => {
-  const patients = await userModel.getUsersByRole("patient");
-  return patients;
-};
 
 const createPatient = async (data) => {
-  const { user_id, gender, birth_date, address } = data;
-  //Check user tồn tại
-  const user = await userModel.getUserById(user_id);
-  if (!user) {
-    throw new Error("User không tồn tại");
-  }
-
-  const patient = await patientModel.createPatient({
+  const {
     user_id,
     gender,
     birth_date,
     address,
-  });
-  return patient;
+    blood_group,
+    height,
+    weight,
+    allergies,
+    chronic_diseases,
+  } = data;
+
+  const user = await userModel.getUserById(user_id);
+  if (!user) throw new Error("User không tồn tại");
+
+  const existingPatient = await patientModel.getPatientByUserId(user_id);
+
+  const payload = {
+    gender,
+    birth_date,
+    address,
+    blood_group,
+    height,
+    weight,
+    allergies,
+    chronic_diseases,
+  };
+
+  if (existingPatient) {
+    return await patientModel.updatePatient(existingPatient._id, payload);
+  } else {
+    return await patientModel.createPatient({ user_id, ...payload });
+  }
 };
 
-export const patientService = {
-  getAllPatients,
-  createPatient,
-};
+export const patientService = { createPatient };

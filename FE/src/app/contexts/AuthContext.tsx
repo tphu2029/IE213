@@ -7,7 +7,6 @@ import {
 } from "react";
 import { authService } from "../services";
 
-// 1. Thêm register vào Interface
 interface AuthContextType {
   user: any;
   login: (email: string, password: string) => Promise<void>;
@@ -28,7 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const token = localStorage.getItem("accessToken");
       if (token) {
         try {
-          const { data } = await authService.getProfile("me");
+          const { data } = await authService.getProfile();
           setUser(data.data);
         } catch {
           localStorage.removeItem("accessToken");
@@ -45,29 +44,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(data.user);
   };
 
-  // 2. Định nghĩa hàm register
   const register = async (formData: any) => {
     await authService.register(formData);
   };
 
-  const logout = () => {
-    authService.logout();
-    localStorage.removeItem("accessToken");
-    setUser(null);
+  const logout = async () => {
+    try {
+      // Gọi API logout để xóa session ở BE
+      await authService.logout();
+    } catch (err) {
+      console.warn("Server logout error, performing local cleanup");
+    } finally {
+      localStorage.removeItem("accessToken");
+      setUser(null);
+      window.location.href = "/login"; // Đưa về trang login
+    }
   };
 
   const updateUser = (data: any) => setUser(data);
 
   return (
     <AuthContext.Provider
-      value={{
-        user,
-        login,
-        register, // 3. Đưa register vào Provider
-        logout,
-        updateUser,
-        isLoading,
-      }}
+      value={{ user, login, register, logout, updateUser, isLoading }}
     >
       {children}
     </AuthContext.Provider>

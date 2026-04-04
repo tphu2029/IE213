@@ -1,24 +1,14 @@
 import { patientService } from "../Services/patientService.js";
 
-const getPatients = async (req, res) => {
-  try {
-    const patients = await patientService.getAllPatients();
-
-    res.json({
-      message: "List of patients",
-      data: patients,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Error fetching patients",
-      error: error.message,
-    });
-  }
-};
-
 const createPatient = async (req, res) => {
   try {
-    const patient = await patientService.createPatient(req.body);
+    // Lấy ID từ token đã được verify ở Middleware
+    const user_id = req.user.id;
+
+    // Gộp user_id vào cùng dữ liệu body
+    const patientData = { ...req.body, user_id };
+
+    const patient = await patientService.createPatient(patientData);
     res.status(201).json({
       success: true,
       data: patient,
@@ -30,7 +20,14 @@ const createPatient = async (req, res) => {
     });
   }
 };
-export const patientController = {
-  getPatients,
-  createPatient,
+
+const getPatients = async (req, res) => {
+  try {
+    const patients = await patientService.getAllPatients();
+    res.json({ success: true, data: patients });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 };
+
+export const patientController = { getPatients, createPatient };

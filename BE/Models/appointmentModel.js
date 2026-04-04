@@ -4,46 +4,28 @@ const COLLECTION_NAME = "appointments";
 
 const appointmentSchema = new mongoose.Schema(
   {
-    patient_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "patients",
-    },
-    doctor_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "doctors",
-    },
-    appointment_date: {
-      type: Date,
-    },
-    time_slot: {
-      type: String,
-    },
-    reason: {
-      type: String,
-    },
+    patient_id: { type: mongoose.Schema.Types.ObjectId, ref: "patients" },
+    doctor_id: { type: mongoose.Schema.Types.ObjectId, ref: "doctors" },
+    appointment_date: { type: Date },
+    time_slot: { type: String },
+    reason: { type: String },
     status: {
       type: String,
-      enum: ["pending", "confirmed", "in_progress", "completed"],
+      enum: ["pending", "confirmed", "in_progress", "completed", "cancelled"],
       default: "pending",
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true },
 );
-//Hệ thống sẽ tự động ném ra lỗi nếu cố tình lưu 2 lịch giống nhau.
+
 appointmentSchema.index(
   { doctor_id: 1, appointment_date: 1, time_slot: 1 },
-  { unique: true, partialFilterExpression: { status: { $ne: "completed" } } } // Có thể bỏ qua các lịch đã hủy/hoàn thành
+  { unique: true, partialFilterExpression: { status: { $ne: "cancelled" } } },
 );
 
 const Appointment = mongoose.model(COLLECTION_NAME, appointmentSchema);
 
-// --- CÁC HÀM THAO TÁC VỚI DATABASE ---
-
-const createAppointment = async (appointmentData) => {
-  return await Appointment.create(appointmentData);
-};
+const createAppointment = async (data) => await Appointment.create(data);
 
 const getAllAppointments = async () => {
   return await Appointment.find().populate("patient_id").populate("doctor_id");
@@ -55,29 +37,22 @@ const getAppointmentById = async (id) => {
     .populate("doctor_id");
 };
 
-const updateAppointment = async (id, updateData) => {
-  return await Appointment.findByIdAndUpdate(id, updateData, { new: true });
-};
-
-const deleteAppointment = async (id) => {
-  return await Appointment.findByIdAndDelete(id);
-};
-
-// Các hàm đặc thù cho Appointment
-const getAppointmentsByDoctor = async (doctorId) => {
-  return await Appointment.find({ doctor_id: doctorId });
-};
-
+// --- Deep Populate để lấy tên bác sĩ ---
 const getAppointmentsByPatient = async (patientId) => {
-  return await Appointment.find({ patient_id: patientId });
+  return await Appointment.find({ patient_id: patientId })
+    .populate({
+      path: "doctor_id",
+      populate: {
+        path: "user_id",
+        select: "username", // Chỉ lấy field username của bác sĩ
+      },
+    })
+    .sort({ createdAt: -1 }); // Hiện lịch mới nhất lên đầu
 };
 
 export const appointmentModel = {
   createAppointment,
   getAllAppointments,
   getAppointmentById,
-  updateAppointment,
-  deleteAppointment,
-  getAppointmentsByDoctor,
   getAppointmentsByPatient,
 };

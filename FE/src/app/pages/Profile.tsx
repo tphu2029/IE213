@@ -4,13 +4,19 @@ import { useTranslation } from "react-i18next";
 import { authService, patientService } from "../services";
 import {
   ClipboardList,
-  ShieldAlert,
-  Activity,
   Save,
   Edit3,
   X,
-  Mail,
+  User,
   Phone,
+  MapPin,
+  Calendar as CalendarIcon,
+  Loader2,
+  Mail,
+  Activity,
+  Heart,
+  Scale,
+  Ruler,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -19,102 +25,143 @@ export function Profile() {
   const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
 
   const [formData, setFormData] = useState({
     username: "",
+    email: "",
     phone: "",
-    gender: "Other",
+    gender: "Nam",
     birth_date: "",
     address: "",
+    blood_group: "A",
+    height: 0,
+    weight: 0,
+    allergies: "",
+    chronic_diseases: "",
   });
 
+  const loadProfileData = async () => {
+    setFetching(true);
+    try {
+      const { data } = await authService.getProfile();
+      const p = data.data;
+      setFormData({
+        username: p.username || "",
+        email: p.email || "",
+        phone: p.phone || "",
+        gender: p.gender || "Nam",
+        birth_date: p.birth_date ? p.birth_date.split("T")[0] : "",
+        address: p.address || "",
+        blood_group: p.blood_group || "A",
+        height: p.height || 0,
+        weight: p.weight || 0,
+        allergies: p.allergies || "",
+        chronic_diseases: p.chronic_diseases || "",
+      });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setFetching(false);
+    }
+  };
+
   useEffect(() => {
-    const init = async () => {
-      try {
-        const { data } = await authService.getProfile("me");
-        setFormData({
-          username: data.data.username || "",
-          phone: data.data.phone || "",
-          gender: data.data.gender || "Other",
-          birth_date: data.data.birth_date
-            ? data.data.birth_date.split("T")[0]
-            : "",
-          address: data.data.address || "",
-        });
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    init();
+    loadProfileData();
   }, []);
+
+  const calculateBMI = () => {
+    if (!formData.height || !formData.weight)
+      return { score: 0, text: t("bmi_no_data"), color: "text-gray-400" };
+    const h = formData.height / 100;
+    const bmi = parseFloat((formData.weight / (h * h)).toFixed(1));
+    if (bmi < 18.5)
+      return { score: bmi, text: t("bmi_low"), color: "text-blue-500" };
+    if (bmi < 25)
+      return { score: bmi, text: t("bmi_normal"), color: "text-green-500" };
+    return { score: bmi, text: t("bmi_over"), color: "text-red-500" };
+  };
 
   const handleSave = async () => {
     setLoading(true);
     try {
-      // 1. Cập nhật bảng Users
       await authService.updateProfile({
         username: formData.username,
         phone: formData.phone,
       });
-
-      // 2. Cập nhật/Tạo bảng Patients (Đồng bộ với BE)
-      await patientService.createPatientProfile({
-        user_id: user.id,
-        gender: formData.gender,
-        birth_date: formData.birth_date,
-        address: formData.address,
-      });
-
+      await patientService.createPatientProfile(formData as any);
+      updateUser({ ...user, username: formData.username });
       toast.success(t("update_success"));
       setIsEditing(false);
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Lỗi cập nhật");
+      loadProfileData();
+    } catch (err) {
+      toast.error("Error");
     } finally {
       setLoading(false);
     }
   };
 
+  if (fetching)
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="animate-spin text-blue-600" size={40} />
+      </div>
+    );
+
+  const bmi = calculateBMI();
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pt-24 px-4 pb-12 transition-colors">
-      <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Profile Card */}
-        <div className="bg-white dark:bg-gray-900 p-8 rounded-[32px] border dark:border-gray-800 shadow-sm h-fit">
-          <div className="w-32 h-32 mx-auto bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center text-blue-600 font-bold text-4xl mb-6">
-            {formData.username?.[0] || "U"}
+      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="space-y-6">
+          <div className="bg-white dark:bg-gray-900 p-8 rounded-[32px] border dark:border-gray-800 shadow-sm text-center">
+            <div className="w-32 h-32 mx-auto bg-blue-600 rounded-full flex items-center justify-center text-white font-black text-5xl mb-6 shadow-xl">
+              {formData.username?.[0]?.toUpperCase()}
+            </div>
+            <h2 className="text-2xl font-black dark:text-white mb-1">
+              {formData.username}
+            </h2>
+            <p className="text-gray-400 text-sm mb-6 flex items-center justify-center gap-2">
+              <Mail size={14} /> {formData.email}
+            </p>
+            <div className="bg-blue-50 dark:bg-blue-900/20 text-blue-600 p-3 rounded-2xl text-[10px] font-black uppercase tracking-widest">
+              {t("profile_role_patient")}
+            </div>
           </div>
-          <h2 className="text-2xl font-black text-center dark:text-white">
-            {formData.username}
-          </h2>
-          <p className="text-center text-gray-500 dark:text-gray-400 text-sm mb-4">
-            {user?.email}
-          </p>
-          <div className="bg-blue-600/10 text-blue-600 p-2 rounded-xl text-xs font-black text-center uppercase tracking-widest">
-            {user?.role}
+          <div className="bg-white dark:bg-gray-900 p-8 rounded-[32px] border dark:border-gray-800 shadow-sm">
+            <h3 className="font-black dark:text-white mb-6 flex items-center gap-2 uppercase text-[10px] tracking-widest text-gray-400">
+              <Activity size={16} className="text-blue-600" /> {t("bmi_title")}
+            </h3>
+            <div className="text-center">
+              <div className={`text-5xl font-black mb-2 ${bmi.color}`}>
+                {bmi.score || "--"}
+              </div>
+              <div className={`font-bold text-sm ${bmi.color}`}>{bmi.text}</div>
+            </div>
           </div>
         </div>
 
-        {/* Info Form */}
-        <div className="lg:col-span-2 bg-white dark:bg-gray-900 p-8 rounded-[40px] border dark:border-gray-800 shadow-sm">
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-2xl font-black dark:text-white flex items-center gap-2">
-              <ClipboardList className="text-blue-600" /> {t("profile_title")}
+        <div className="lg:col-span-2 bg-white dark:bg-gray-900 p-8 md:p-10 rounded-[40px] border dark:border-gray-800 shadow-sm">
+          <div className="flex justify-between items-center mb-10">
+            <h1 className="text-2xl font-black dark:text-white flex items-center gap-3 italic">
+              <Heart className="text-red-500" size={28} />{" "}
+              {t("profile_health_section")}
             </h1>
             <button
               onClick={() => setIsEditing(!isEditing)}
-              className="text-sm font-bold text-blue-600"
+              className={`p-3 rounded-xl transition-all ${isEditing ? "bg-red-50 text-red-500" : "bg-blue-50 text-blue-600"}`}
             >
-              {isEditing ? <X /> : <Edit3 />}
+              {isEditing ? <X size={20} /> : <Edit3 size={20} />}
             </button>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-400 uppercase">
-                {t("nav_home")} (Name)
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
+                <User size={12} /> {t("label_fullname")}
               </label>
               <input
                 disabled={!isEditing}
-                className="w-full p-4 rounded-2xl border dark:bg-gray-800 dark:text-white dark:border-gray-700"
+                className="w-full p-4 rounded-2xl border-2 dark:bg-gray-950 dark:text-white dark:border-gray-800 focus:border-blue-500 transition-all disabled:opacity-50"
                 value={formData.username}
                 onChange={(e) =>
                   setFormData({ ...formData, username: e.target.value })
@@ -122,12 +169,12 @@ export function Profile() {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-400 uppercase">
-                Phone
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
+                <Phone size={12} /> {t("label_phone")}
               </label>
               <input
                 disabled={!isEditing}
-                className="w-full p-4 rounded-2xl border dark:bg-gray-800 dark:text-white dark:border-gray-700"
+                className="w-full p-4 rounded-2xl border-2 dark:bg-gray-950 dark:text-white dark:border-gray-800 focus:border-blue-500 transition-all disabled:opacity-50"
                 value={formData.phone}
                 onChange={(e) =>
                   setFormData({ ...formData, phone: e.target.value })
@@ -135,13 +182,29 @@ export function Profile() {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-400 uppercase">
-                Birth Date
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
+                {t("label_gender")}
+              </label>
+              <select
+                disabled={!isEditing}
+                className="w-full p-4 rounded-2xl border-2 dark:bg-gray-950 dark:text-white dark:border-gray-800 focus:border-blue-500 transition-all disabled:opacity-50"
+                value={formData.gender}
+                onChange={(e) =>
+                  setFormData({ ...formData, gender: e.target.value })
+                }
+              >
+                <option value="Nam">{t("male")}</option>
+                <option value="Nữ">{t("female")}</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
+                <CalendarIcon size={12} /> {t("label_dob")}
               </label>
               <input
                 type="date"
                 disabled={!isEditing}
-                className="w-full p-4 rounded-2xl border dark:bg-gray-800 dark:text-white dark:border-gray-700"
+                className="w-full p-4 rounded-2xl border-2 dark:bg-gray-950 dark:text-white dark:border-gray-800 focus:border-blue-500 transition-all disabled:opacity-50"
                 value={formData.birth_date}
                 onChange={(e) =>
                   setFormData({ ...formData, birth_date: e.target.value })
@@ -149,12 +212,46 @@ export function Profile() {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-400 uppercase">
-                Address
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
+                <Ruler size={10} /> {t("label_height")}
+              </label>
+              <input
+                type="number"
+                disabled={!isEditing}
+                className="w-full p-4 rounded-2xl border-2 dark:bg-gray-950 dark:text-white dark:border-gray-800 focus:border-blue-500 transition-all disabled:opacity-50"
+                value={formData.height === 0 ? "" : formData.height}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    height: parseInt(e.target.value) || 0,
+                  })
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
+                <Scale size={10} /> {t("label_weight")}
+              </label>
+              <input
+                type="number"
+                disabled={!isEditing}
+                className="w-full p-4 rounded-2xl border-2 dark:bg-gray-950 dark:text-white dark:border-gray-800 focus:border-blue-500 transition-all disabled:opacity-50"
+                value={formData.weight === 0 ? "" : formData.weight}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    weight: parseInt(e.target.value) || 0,
+                  })
+                }
+              />
+            </div>
+            <div className="md:col-span-2 space-y-2">
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
+                {t("label_address")}
               </label>
               <input
                 disabled={!isEditing}
-                className="w-full p-4 rounded-2xl border dark:bg-gray-800 dark:text-white dark:border-gray-700"
+                className="w-full p-4 rounded-2xl border-2 dark:bg-gray-950 dark:text-white dark:border-gray-800 focus:border-blue-500 transition-all disabled:opacity-50"
                 value={formData.address}
                 onChange={(e) =>
                   setFormData({ ...formData, address: e.target.value })
@@ -162,13 +259,18 @@ export function Profile() {
               />
             </div>
           </div>
-
           {isEditing && (
             <button
               onClick={handleSave}
-              className="w-full mt-8 bg-blue-600 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition"
+              disabled={loading}
+              className="w-full mt-10 bg-blue-600 text-white py-5 rounded-[24px] font-black text-xl hover:bg-blue-700 transition-all shadow-xl flex items-center justify-center gap-3 active:scale-95"
             >
-              <Save size={18} /> {loading ? t("loading") : t("save")}
+              {loading ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <Save size={24} />
+              )}{" "}
+              {t("save")}
             </button>
           )}
         </div>
