@@ -21,4 +21,36 @@ router.get(
   appointmentController.getMyHistory
 );
 
+// [DOCTOR] Lấy lịch hẹn của bác sĩ đang đăng nhập
+router.get(
+  "/doctor-appointments",
+  verifyToken,
+  checkRole("doctor"),
+  appointmentController.getDoctorAppointments
+);
+
+// [DOCTOR/ADMIN] Cập nhật trạng thái lịch hẹn
+router.patch(
+  "/:id/status",
+  verifyToken,
+  checkRole("doctor", "admin"),
+  appointmentController.updateStatus
+);
+
+// [ADMIN] Lấy tất cả lịch hẹn
+router.get(
+  "/admin/all",
+  verifyToken,
+  checkRole("admin"),
+  appointmentController.getAllAppointments
+);
+
+// [ADMIN] Xóa lịch hẹn
+router.delete(
+  "/:id",
+  verifyToken,
+  checkRole("admin"),
+  appointmentController.deleteAppointment
+);
+
 export const appointmentRoute = router;

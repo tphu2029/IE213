@@ -1,4 +1,5 @@
 import { userModel } from "../Models/userModel.js";
+import { patientModel } from "../Models/patientModel.js";
 import bcrypt from "bcrypt";
 import {
   generateAccessToken,
@@ -31,7 +32,7 @@ const createSessionAndTokens = async (user) => {
 };
 
 const register = async (body) => {
-  const { username, email, phone, password, role } = body;
+  const { username, email, phone, password, role, cccd, gender, birth_date, address } = body;
 
   const existUser = await userModel.findUserByEmail(email);
 
@@ -47,6 +48,14 @@ const register = async (body) => {
     phone,
     password: hashPassword,
     role,
+  });
+
+  await patientModel.createPatient({
+    user_id: newUser._id,
+    gender: gender || "Other",
+    birth_date: birth_date || null,
+    address: address || "",
+    cccd: cccd || "",
   });
 
   return newUser;

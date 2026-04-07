@@ -7,7 +7,6 @@ import {
   User as UserIcon,
   Menu,
   X,
-  Search,
   Calendar,
 } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -44,6 +43,13 @@ export function Header() {
   }, [isDark]);
 
   const isActive = (path: string) => location.pathname === path;
+
+  const getAvatarUrl = (path: string): string | undefined => {
+    if (!path) return undefined;
+    const env = (import.meta as any).env;
+    const baseUrl = env?.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:3000';
+    return `${baseUrl}/${path.replace(/\\/g, '/')}`;
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 dark:bg-gray-950/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 transition-all">
@@ -116,7 +122,7 @@ export function Header() {
               >
                 {user.avatar ? (
                   <img
-                    src={user.avatar}
+                    src={getAvatarUrl(user.avatar)}
                     alt="avatar"
                     className="w-full h-full object-cover"
                   />

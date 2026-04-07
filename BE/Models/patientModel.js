@@ -20,6 +20,11 @@ const patientSchema = new mongoose.Schema({
   address: {
     type: String,
   },
+
+  cccd: {
+    type: String,
+    unique: true,
+  },
 });
 
 const Patient = mongoose.model(COLLECTION_NAME, patientSchema);

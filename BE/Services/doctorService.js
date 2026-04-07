@@ -1,8 +1,19 @@
 import { doctorModel } from "../Models/doctorModel.js";
 
+import { doctorScheduleModel } from "../Models/doctorScheduleModel.js";
+
 const getAllDoctors = async () => {
   const doctors = await doctorModel.getAllDoctors();
-  return doctors;
+  
+  // Lấy lịch trình của tất cả bác sĩ và gắn vào
+  const doctorsWithSchedules = await Promise.all(
+    doctors.map(async (doc) => {
+      const schedules = await doctorScheduleModel.getDoctorScheduleByDoctorId(doc._id);
+      return { ...doc.toObject(), schedules };
+    })
+  );
+
+  return doctorsWithSchedules;
 };
 
 const createDoctor = async (data) => {

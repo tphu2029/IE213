@@ -41,7 +41,12 @@ const getAllDoctors = async () => {
   return await Doctor.find().populate("user_id").populate("department_id");
 };
 const findByUserId = async (userId) => {
-  return await Doctor.findOne({ userId });
+  return await Doctor.findOne({ user_id: userId });
+};
+
+// Alias có tên rõ ràng hơn dùng trong controller
+const findDoctorByUserId = async (userId) => {
+  return await Doctor.findOne({ user_id: userId }).populate("user_id").populate("department_id");
 };
 
 const getDoctorById = async (id) => {
@@ -77,5 +82,6 @@ export const doctorModel = {
   deleteDoctor,
   getDoctorsByDepartment,
   findByUserId,
+  findDoctorByUserId,
   countDoctors,
 };

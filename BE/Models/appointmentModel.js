@@ -46,7 +46,10 @@ const createAppointment = async (appointmentData) => {
 };
 
 const getAllAppointments = async () => {
-  return await Appointment.find().populate("patient_id").populate("doctor_id");
+  return await Appointment.find()
+    .populate({ path: "patient_id", populate: { path: "user_id" } })
+    .populate({ path: "doctor_id", populate: { path: "user_id" } })
+    .sort({ createdAt: -1 });
 };
 
 const getAppointmentById = async (id) => {
@@ -69,7 +72,22 @@ const getAppointmentsByDoctor = async (doctorId) => {
 };
 
 const getAppointmentsByPatient = async (patientId) => {
-  return await Appointment.find({ patient_id: patientId });
+  return await Appointment.find({ patient_id: patientId })
+    .populate({
+      path: "doctor_id",
+      populate: { path: "user_id" },
+    })
+    .sort({ createdAt: -1 });
+};
+
+// [DOCTOR] Lấy lịch hẹn theo bác sĩ, kèm thông tin bệnh nhân
+const getAppointmentsByDoctorPopulated = async (doctorId) => {
+  return await Appointment.find({ doctor_id: doctorId })
+    .populate({
+      path: "patient_id",
+      populate: { path: "user_id" },
+    })
+    .sort({ appointment_date: 1, time_slot: 1 });
 };
 
 // CÁC HÀM THỐNG KÊ 
@@ -91,6 +109,7 @@ export const appointmentModel = {
   deleteAppointment,
   getAppointmentsByDoctor,
   getAppointmentsByPatient,
+  getAppointmentsByDoctorPopulated,
   countAppointments,
   getAppointmentsCountByStatus,
 };

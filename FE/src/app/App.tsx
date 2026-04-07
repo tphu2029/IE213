@@ -10,7 +10,7 @@ export default function App() {
       <AdminProvider>
         {/* RouterProvider quản lý toàn bộ các trang */}
         <RouterProvider router={router} />
-        <Toaster position="top-right" richColors />
+        <Toaster position="top-right" richColors duration={2000} />
       </AdminProvider>
     </AuthProvider>
   );

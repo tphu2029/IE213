@@ -40,6 +40,10 @@ const registerSchema = Joi.object({
     .messages({
       "any.only": "Role phải là admin, doctor hoặc patient",
     }),
+  cccd: Joi.string().allow("").optional(),
+  gender: Joi.string().allow("").optional(),
+  birth_date: Joi.alternatives().try(Joi.date(), Joi.string().allow("")).optional(),
+  address: Joi.string().allow("").optional(),
 });
 
 //Định nghĩa bộ quy tắc cho Đăng nhập

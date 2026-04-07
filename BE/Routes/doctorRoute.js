@@ -11,6 +11,14 @@ router.get(
   doctorController.getDoctors,
 );
 
+// Lấy profile bác sĩ của user đang đăng nhập (dùng cho Doctor Dashboard)
+router.get(
+  "/me",
+  verifyToken,
+  checkRole("doctor"),
+  doctorController.getMyDoctorProfile,
+);
+
 router.get(
   "/:id",
   verifyToken,

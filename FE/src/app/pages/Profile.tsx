@@ -1,52 +1,59 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import { authService, patientService } from "../services";
 import {
   ClipboardList,
-  ShieldAlert,
-  Activity,
   Save,
   Edit3,
   X,
-  Mail,
-  Phone,
+  Camera,
 } from "lucide-react";
 import { toast } from "sonner";
 
 export function Profile() {
-  const { user, updateUser } = useAuth();
+  const { user, updateUser } = useAuth() as any;
   const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
-    username: "",
-    phone: "",
+    username: user?.username || "",
+    phone: user?.phone || "",
     gender: "Other",
     birth_date: "",
     address: "",
+    cccd: "",
   });
 
   useEffect(() => {
+    let isMounted = true;
     const init = async () => {
       try {
         const { data } = await authService.getProfile("me");
-        setFormData({
-          username: data.data.username || "",
-          phone: data.data.phone || "",
-          gender: data.data.gender || "Other",
-          birth_date: data.data.birth_date
-            ? data.data.birth_date.split("T")[0]
-            : "",
-          address: data.data.address || "",
-        });
+        console.log("Profile fetched:", data);
+        if (data && data.data && isMounted) {
+          setFormData({
+            username: data.data.username || "",
+            phone: data.data.phone || "",
+            gender: data.data.gender || "Other",
+            birth_date: data.data.birth_date
+              ? String(data.data.birth_date).split("T")[0]
+              : "",
+            address: data.data.address || "",
+            cccd: data.data.cccd || "",
+          });
+        }
       } catch (err) {
-        console.error(err);
+        console.error("Failed to load profile via endpoint /users/me:", err);
       }
     };
-    init();
-  }, []);
+    if (user) {
+      init();
+    }
+    return () => { isMounted = false; };
+  }, [user]);
 
   const handleSave = async () => {
     setLoading(true);
@@ -63,6 +70,7 @@ export function Profile() {
         gender: formData.gender,
         birth_date: formData.birth_date,
         address: formData.address,
+        cccd: formData.cccd,
       });
 
       toast.success(t("update_success"));
@@ -74,14 +82,66 @@ export function Profile() {
     }
   };
 
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const form = new FormData();
+    form.append("avatar", file);
+
+    try {
+      setLoading(true);
+      const { data } = await authService.updateProfile(form);
+      if (data && data.success) {
+        toast.success("Cập nhật Ảnh đại diện thành công!");
+        
+        if (data.data && data.data.avatar) {
+           if (typeof updateUser === "function") {
+               updateUser({ ...user, avatar: data.data.avatar });
+           }
+           window.location.reload(); 
+        }
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Lỗi cập nhật ảnh");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getAvatarUrl = (path: string): string | undefined => {
+    if (!path) return undefined;
+    const env = (import.meta as any).env;
+    const baseUrl = env?.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:3000';
+    return `${baseUrl}/${path.replace(/\\/g, '/')}`;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pt-24 px-4 pb-12 transition-colors">
       <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Profile Card */}
-        <div className="bg-white dark:bg-gray-900 p-8 rounded-[32px] border dark:border-gray-800 shadow-sm h-fit">
-          <div className="w-32 h-32 mx-auto bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center text-blue-600 font-bold text-4xl mb-6">
-            {formData.username?.[0] || "U"}
+        <div className="bg-white dark:bg-gray-900 p-8 rounded-[32px] border dark:border-gray-800 shadow-sm h-fit relative">
+          <div 
+            onClick={() => fileInputRef.current?.click()}
+            className="w-32 h-32 mx-auto bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center text-blue-600 font-bold text-4xl mb-6 relative group cursor-pointer overflow-hidden border-4 border-blue-50 dark:border-gray-800"
+          >
+            {user?.avatar ? (
+               <img src={getAvatarUrl(user.avatar)} alt="Avatar" className="w-full h-full object-cover" />
+            ) : (
+               formData.username?.[0] || "U"
+            )}
+            
+            <div className="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center transition-all">
+               <Camera className="text-white w-8 h-8" />
+            </div>
           </div>
+          <input 
+             type="file" 
+             ref={fileInputRef} 
+             accept="image/*" 
+             className="hidden" 
+             onChange={handleAvatarChange} 
+          />
           <h2 className="text-2xl font-black text-center dark:text-white">
             {formData.username}
           </h2>
@@ -108,6 +168,19 @@ export function Profile() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-gray-400 uppercase">
+                CCCD / CMND
+              </label>
+              <input
+                disabled={!isEditing}
+                className="w-full p-4 rounded-2xl border dark:bg-gray-800 dark:text-white dark:border-gray-700"
+                value={(!isEditing && formData.cccd) ? formData.cccd.slice(0, 3) + "*********" : formData.cccd}
+                onChange={(e) =>
+                  setFormData({ ...formData, cccd: e.target.value })
+                }
+              />
+            </div>
             <div className="space-y-2">
               <label className="text-xs font-bold text-gray-400 uppercase">
                 {t("nav_home")} (Name)

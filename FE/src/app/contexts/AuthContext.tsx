@@ -43,6 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data } = await authService.login({ email, password });
     localStorage.setItem("accessToken", data.accessToken);
     setUser(data.user);
+    return data.user; // trả về user để caller biết role
   };
 
   // 2. Định nghĩa hàm register

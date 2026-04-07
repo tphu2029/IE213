@@ -67,7 +67,7 @@ export function AdminLogin() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
-                  placeholder="admin@modernhospital.com"
+                  placeholder="admin@hospital.com"
                 />
               </div>
             </div>
@@ -98,14 +98,6 @@ export function AdminLogin() {
               {isLoading ? 'Signing in...' : 'Sign In as Admin'}
             </button>
           </form>
-
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-            <p className="text-xs text-blue-900">
-              <strong>Demo Credentials:</strong><br />
-              Email: admin@modernhospital.com<br />
-              Password: admin123
-            </p>
-          </div>
         </div>
       </div>
     </div>

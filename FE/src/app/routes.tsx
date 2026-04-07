@@ -1,4 +1,5 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, Navigate } from "react-router";
+import { useAuth } from "./contexts/AuthContext";
 
 // Layouts
 import { RootLayout } from "./components/layout/RootLayout";
@@ -22,6 +23,7 @@ import { MedicalRecords } from "./pages/MedicalRecords";
 import { MedicalHistory } from "./pages/MedicalHistory";
 import { Invoices } from "./pages/Invoices";
 import { Profile } from "./pages/Profile";
+import { DoctorDashboard } from "./pages/DoctorDashboard";
 
 // Admin Pages
 import { AdminLogin } from "./pages/admin/AdminLogin";
@@ -33,6 +35,14 @@ import { AdminPaymentMethods } from "./pages/admin/AdminPaymentMethods";
 
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AdminRoute } from "./components/AdminRoute";
+
+// Doctor route guard - chỉ cho phép role "doctor"
+function DoctorRoute({ children }: { children: React.ReactNode }) {
+  const { user, isLoading } = useAuth();
+  if (isLoading) return null;
+  if (!user || user.role !== "doctor") return <Navigate to="/login" />;
+  return <>{children}</>;
+}
 
 export const router = createBrowserRouter([
   {
@@ -99,6 +109,16 @@ export const router = createBrowserRouter([
         ),
       },
     ],
+  },
+
+  // --- Doctor Portal ---
+  {
+    path: "/doctors/dashboard",
+    element: (
+      <DoctorRoute>
+        <DoctorDashboard />
+      </DoctorRoute>
+    ),
   },
 
   // --- Admin Routes ---

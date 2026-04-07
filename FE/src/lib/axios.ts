@@ -6,7 +6,8 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken");
+  // Ưu tiên dùng adminToken nếu đang ở luồng admin, fallback về accessToken
+  const token = localStorage.getItem("adminToken") || localStorage.getItem("accessToken");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

@@ -1,4 +1,5 @@
 import { userModel } from "../Models/userModel.js";
+import { patientModel } from "../Models/patientModel.js";
 import bcrypt from "bcrypt";
 // 1. Lấy thông tin cá nhân
 const getProfileById = async (userId) => {
@@ -11,6 +12,14 @@ const getProfileById = async (userId) => {
   const userProfile = user.toObject();
   delete userProfile.password;
   delete userProfile.refreshToken;
+
+  const patient = await patientModel.getPatientByUserId(userId);
+  if (patient) {
+    userProfile.gender = patient.gender;
+    userProfile.birth_date = patient.birth_date;
+    userProfile.address = patient.address;
+    userProfile.cccd = patient.cccd;
+  }
 
   return userProfile;
 };

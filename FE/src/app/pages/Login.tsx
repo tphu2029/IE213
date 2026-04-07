@@ -18,9 +18,14 @@ export function Login() {
     setIsLoading(true);
 
     try {
-      await login(email, password);
-      toast.success("Welcome back!");
-      navigate("/my-appointments");
+      const user = await login(email, password);
+      toast.success("Đăng nhập thành công!");
+      // Redirect theo role
+      if ((user as any)?.role === "doctor") {
+        navigate("/doctors/dashboard");
+      } else {
+        navigate("/my-appointments");
+      }
     } catch (err: any) {
       setError(err.message || "Failed to login");
       toast.error(err.message || "Failed to login");

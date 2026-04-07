@@ -11,27 +11,25 @@ const bookAppointment = async (patient_id, appointmentData) => {
   // Tìm xem appointment_date là thứ mấy trong tuần
   // dayjs().day() trả về từ 0 (Chủ nhật) đến 6 (Thứ 7)
   const daysOfWeek = [
-    "Chủ nhật",
-    "Thứ 2",
-    "Thứ 3",
-    "Thứ 4",
-    "Thứ 5",
-    "Thứ 6",
-    "Thứ 7",
+    "Chủ nhật", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"
+  ];
+  const daysOfWeekEN = [
+    "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
   ];
 
   const dayIndex = dayjs(appointment_date).day();
 
-  const appointmentDayName = daysOfWeek[dayIndex];
+  const appointmentDayName_VI = daysOfWeek[dayIndex];
+  const appointmentDayName_EN = daysOfWeekEN[dayIndex];
 
   // Lấy lịch làm việc của bác sĩ từ DB
-  const doctorSchedules = await doctorScheduleModel.getDoctorScheduleByDoctorId(
-    doctor_id
-  );
+  const doctorSchedules = await doctorScheduleModel.getDoctorScheduleByDoctorId(doctor_id);
 
-  // Kiểm tra xem bác sĩ có lịch làm việc vào ngày đó không
+  // Hỗ trợ kiểm tra lịch học theo cả tiếng Anh và tiếng Việt
   const scheduleForDay = doctorSchedules.find(
-    (schedule) => schedule.day_of_week === appointmentDayName
+    (schedule) => 
+      schedule.day_of_week === appointmentDayName_VI || 
+      schedule.day_of_week === appointmentDayName_EN
   );
 
   if (!scheduleForDay) {
@@ -72,11 +70,23 @@ const bookAppointment = async (patient_id, appointmentData) => {
 };
 
 const getPatientAppointments = async (patient_id) => {
-  const appointments = await appointmentModel.getAppointmentById(patient_id);
+  const appointments = await appointmentModel.getAppointmentsByPatient(patient_id);
   return appointments;
+};
+
+// [DOCTOR] Lấy tất cả lịch hẹn theo doctor_id
+const getDoctorAppointments = async (doctor_id) => {
+  return await appointmentModel.getAppointmentsByDoctorPopulated(doctor_id);
+};
+
+// Cập nhật trạng thái lịch hẹn
+const updateAppointmentStatus = async (id, status) => {
+  return await appointmentModel.updateAppointment(id, { status });
 };
 
 export const appointmentService = {
   getPatientAppointments,
   bookAppointment,
+  getDoctorAppointments,
+  updateAppointmentStatus,
 };
