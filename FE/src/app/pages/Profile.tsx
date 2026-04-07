@@ -183,7 +183,7 @@ export function Profile() {
             </div>
             <div className="space-y-2">
               <label className="text-xs font-bold text-gray-400 uppercase">
-                {t("nav_home")} (Name)
+                {t("contact_form_name")} (Name)
               </label>
               <input
                 disabled={!isEditing}

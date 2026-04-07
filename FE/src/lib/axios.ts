@@ -13,7 +13,8 @@ api.interceptors.request.use((config) => {
   const adminToken = localStorage.getItem("adminToken");
   const userToken = localStorage.getItem("accessToken");
 
-  const token = (isAdminRequest && adminToken) ? adminToken : userToken;
+  // Nếu là request admin thì ưu tiên adminToken, ngược lại dùng userToken
+  const token = isAdminRequest ? (adminToken || userToken) : userToken;
   
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
