@@ -31,7 +31,6 @@ import { AdminDoctors } from "./pages/admin/AdminDoctors";
 import { AdminUsers } from "./pages/admin/AdminUsers";
 import { AdminPaymentMethods } from "./pages/admin/AdminPaymentMethods";
 
-// Route Guards
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AdminRoute } from "./components/AdminRoute";
 
