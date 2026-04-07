@@ -6,8 +6,15 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  // Ưu tiên dùng adminToken nếu đang ở luồng admin, fallback về accessToken
-  const token = localStorage.getItem("adminToken") || localStorage.getItem("accessToken");
+  const url = config.url || "";
+  // Chỉ dùng adminToken cho các request đến endpoint admin hoặc báo cáo
+  const isAdminRequest = url.includes("/admin/") || url.includes("/reports");
+  
+  const adminToken = localStorage.getItem("adminToken");
+  const userToken = localStorage.getItem("accessToken");
+
+  const token = (isAdminRequest && adminToken) ? adminToken : userToken;
+  
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
