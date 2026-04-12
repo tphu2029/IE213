@@ -1,45 +1,36 @@
 import Joi from "joi";
 
-// Định nghĩa bộ quy tắc cho việc đặt lịch khám
 const bookAppointmentSchema = Joi.object({
-  // Bắt buộc phải truyền lên ID của bác sĩ (Định dạng ObjectId của MongoDB là chuỗi hex 24 ký tự)
   doctor_id: Joi.string().hex().length(24).required().messages({
     "string.empty": "Vui lòng chọn bác sĩ",
-    "string.hex": "ID bác sĩ không hợp lệ",
-    "string.length": "ID bác sĩ không đúng định dạng chuẩn",
     "any.required": "Trường doctor_id là bắt buộc",
   }),
 
-  // Ngày khám bắt buộc phải lớn hơn thời điểm hiện tại ('now')
-  appointment_date: Joi.date().greater("now").required().messages({
-    "date.base": "Ngày giờ khám không đúng định dạng",
-    "date.greater":
-      "Không thể đặt lịch khám trong quá khứ. Vui lòng chọn thời gian tương lai!",
-    "any.required": "Vui lòng chọn ngày giờ khám",
+  // SỬA LỖI: Sử dụng .min('now') để chặn đặt lịch vào các ngày trước hôm nay
+  appointment_date: Joi.date().min("now").required().messages({
+    "date.base": "Ngày khám không hợp lệ",
+    "date.min": "Không thể đặt lịch khám cho các ngày trong quá khứ",
+    "any.required": "Vui lòng chọn ngày khám",
   }),
 
-  // Khung giờ (so khớp lịch bác sĩ trong DB)
-  time_slot: Joi.string().trim().min(1).required().messages({
-    "string.empty": "Vui lòng chọn khung giờ khám",
-    "any.required": "Trường time_slot là bắt buộc",
+  shift: Joi.string().valid("Morning", "Afternoon").required().messages({
+    "any.only": "Buổi khám không hợp lệ",
   }),
 
-  // Lý do khám: Không bắt buộc, nhưng nếu nhập thì không được dài quá 500 ký tự để tránh spam
-  reason: Joi.string().max(500).allow("").optional().messages({
-    "string.max": "Lý do khám không được vượt quá 500 ký tự",
+  hasInsurance: Joi.boolean().required().messages({
+    "any.required": "Vui lòng xác nhận trạng thái bảo hiểm",
   }),
+
+  reason: Joi.string().max(500).allow("").optional(),
 });
 
-// Middleware xác thực
 export const validateBookAppointment = (req, res, next) => {
   const { error } = bookAppointmentSchema.validate(req.body);
-
   if (error) {
     return res.status(400).json({
       success: false,
       message: error.details[0].message,
     });
   }
-
   next();
 };

@@ -40,13 +40,17 @@ const registerSchema = Joi.object({
     .messages({
       "any.only": "Role phải là admin, doctor hoặc patient",
     }),
-  cccd: Joi.string().allow("").optional(),
+  cccd: Joi.string().length(12).pattern(/^\d+$/).allow("").optional().messages({
+    "string.length": "CCCD phải đúng 12 chữ số",
+    "string.pattern.base": "CCCD chỉ được bao gồm các ký tự số",
+  }),
   gender: Joi.string().allow("").optional(),
-  birth_date: Joi.alternatives().try(Joi.date(), Joi.string().allow("")).optional(),
+  birth_date: Joi.alternatives()
+    .try(Joi.date(), Joi.string().allow(""))
+    .optional(),
   address: Joi.string().allow("").optional(),
 });
 
-//Định nghĩa bộ quy tắc cho Đăng nhập
 const loginSchema = Joi.object({
   email: Joi.string().email().required().messages({
     "string.empty": "Email không được để trống",
@@ -59,7 +63,6 @@ const loginSchema = Joi.object({
   }),
 });
 
-// registerValidate
 export const registerValidate = (req, res, next) => {
   const { error } = registerSchema.validate(req.body);
 
@@ -73,7 +76,6 @@ export const registerValidate = (req, res, next) => {
   next();
 };
 
-//loginValidate
 export const loginValidate = (req, res, next) => {
   const { error } = loginSchema.validate(req.body);
 

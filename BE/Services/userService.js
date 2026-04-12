@@ -1,7 +1,7 @@
 import { userModel } from "../Models/userModel.js";
 import { patientModel } from "../Models/patientModel.js";
 import bcrypt from "bcrypt";
-// 1. Lấy thông tin cá nhân
+
 const getProfileById = async (userId) => {
   const user = await userModel.getUserById(userId);
 
@@ -23,25 +23,32 @@ const getProfileById = async (userId) => {
 
   return userProfile;
 };
-// 2. Cập nhật thông tin cá nhân
+
 const updateProfile = async (user_id, updateData) => {
   const { username, email, phone, avatar } = updateData;
+
+  // Xử lý chuyển đổi kí tự Windows file path `\` thành `/` cho trình duyệt web đọc
+  const normalizedAvatar = avatar ? avatar.replace(/\\/g, "/") : undefined;
+
   const updatedUser = await userModel.updateUser(user_id, {
     username,
     email,
     phone,
-    avatar,
+    ...(normalizedAvatar && { avatar: normalizedAvatar }),
   });
-  if (!updateProfile) {
+
+  //Kiểm tra đúng biến cập nhật thay vì tên của hàm
+  if (!updatedUser) {
     throw new Error("Failed to update profile");
   }
+
   const userProfile = updatedUser.toObject();
   delete userProfile.refreshToken;
+  delete userProfile.password;
 
   return userProfile;
 };
 
-// 3. Đổi mật khẩu
 const changePassword = async (userId, passwordData) => {
   const { oldPassword, newPassword } = passwordData;
 
@@ -50,20 +57,17 @@ const changePassword = async (userId, passwordData) => {
     throw new Error("User not found");
   }
 
-  // Kiểm tra mật khẩu cũ có khớp không
   const isMatch = await bcrypt.compare(oldPassword, user.password);
   if (!isMatch) {
     throw new Error("Invalid old password");
   }
 
-  // Mã hóa mật khẩu mới và lưu lại
   const hashedNewPassword = await bcrypt.hash(newPassword, 10);
   await userModel.updateUser(userId, { password: hashedNewPassword });
 
   return { message: "Password changed successfully" };
 };
 
-// 4. Lấy danh sách tất cả user (Dành cho Admin)
 const getAllUsers = async () => {
   const users = await userModel.getAllUsers();
 

@@ -4,7 +4,6 @@ import { Link } from "react-router";
 import {
   ArrowRight,
   AlertCircle,
-  Info,
   Stethoscope,
   Heart,
   Wind,
@@ -14,12 +13,12 @@ import {
   Eye,
   Ear,
   ClipboardCheck,
-  Activity,
   Baby,
   Venus,
   Syringe,
   FlaskConical,
   Loader2,
+  Info,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -59,7 +58,7 @@ export function Services() {
 
   return (
     <div className="bg-gray-50 dark:bg-gray-950 min-h-screen pt-20 transition-colors duration-300">
-      {/* Hero Banner */}
+      {/* 1. Hero Banner */}
       <section className="bg-blue-600 dark:bg-blue-700 py-32 text-center text-white relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2"></div>
         <div className="relative z-10 max-w-4xl mx-auto px-4">
@@ -72,7 +71,7 @@ export function Services() {
         </div>
       </section>
 
-      {/* Grid Chuyên Khoa */}
+      {/* 2. Grid Chuyên Khoa */}
       <section className="max-w-7xl mx-auto px-4 py-24">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 text-blue-600 gap-4">
@@ -114,6 +113,7 @@ export function Services() {
                     </p>
                   </div>
 
+                  {/* THỰC HIỆN TRUYỀN ID KHOA QUA URL */}
                   <Link
                     to={`/book?dept=${dept._id}`}
                     className="flex items-center justify-center gap-3 w-full py-5 bg-gray-900 dark:bg-blue-600 text-white rounded-[25px] font-black text-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition-all shadow-xl active:scale-95"
@@ -127,7 +127,7 @@ export function Services() {
         )}
       </section>
 
-      {/* Mẹo chọn khoa Section */}
+      {/* 3. Mẹo chọn khoa Section */}
       <section className="bg-white dark:bg-gray-900 py-24 border-t dark:border-gray-800">
         <div className="max-w-5xl mx-auto px-4 text-center">
           <div className="inline-flex items-center gap-2 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-8 border border-amber-100 dark:border-amber-800">
@@ -146,7 +146,7 @@ export function Services() {
                 </p>
                 <p className="dark:text-gray-200 font-bold text-lg leading-snug">
                   Không rõ triệu chứng cụ thể →{" "}
-                  <span className="text-blue-600">Nội tổng quát</span>
+                  <span className="text-blue-600">{t("dept_general")}</span>
                 </p>
               </div>
             </div>
@@ -158,7 +158,7 @@ export function Services() {
                 </p>
                 <p className="dark:text-gray-200 font-bold text-lg leading-snug">
                   Trẻ em dưới 16 tuổi →{" "}
-                  <span className="text-blue-600">Nhi khoa</span>
+                  <span className="text-blue-600">{t("dept_pedia")}</span>
                 </p>
               </div>
             </div>
@@ -177,7 +177,7 @@ export function Services() {
         </div>
       </section>
 
-      {/* CTA Footer */}
+      {/* 4. CTA Footer (Emergency) */}
       <section className="py-24 px-4">
         <div className="max-w-4xl mx-auto bg-gradient-to-br from-blue-600 to-indigo-800 p-16 rounded-[60px] text-white shadow-2xl text-center relative overflow-hidden">
           <h2 className="text-5xl font-black mb-6 italic tracking-tighter">

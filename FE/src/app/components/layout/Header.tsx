@@ -12,6 +12,7 @@ import {
 import { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useTranslation } from "react-i18next";
+import { BASE_URL } from "@/lib/axios";
 
 export function Header() {
   const { user, logout } = useAuth();
@@ -44,11 +45,10 @@ export function Header() {
 
   const isActive = (path: string) => location.pathname === path;
 
-  const getAvatarUrl = (path: string): string | undefined => {
+  const getAvatarUrl = (path: string | undefined): string | undefined => {
     if (!path) return undefined;
-    const env = (import.meta as any).env;
-    const baseUrl = env?.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:3000';
-    return `${baseUrl}/${path.replace(/\\/g, '/')}`;
+    if (path.startsWith("http")) return path;
+    return `${BASE_URL}/${path}`;
   };
 
   return (

@@ -1,133 +1,110 @@
 import { useState, useEffect } from "react";
 import { hospitalService } from "../services";
-import { useTranslation } from "react-i18next";
-import {
-  Calendar,
-  Clock,
-  User,
-  ChevronRight,
-  AlertCircle,
-  Plus,
-  Loader2,
-} from "lucide-react";
-import { Link } from "react-router";
-
+import { Ticket, X } from "lucide-react";
 export function Dashboard() {
-  const { t } = useTranslation();
-  // KHẮC PHỤC: Luôn khởi tạo là mảng rỗng [] để tránh lỗi .length trên null
   const [appointments, setAppointments] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [viewTicket, setViewTicket] = useState<any>(null);
 
   useEffect(() => {
-    const fetchAppointments = async () => {
-      try {
-        const res = await hospitalService.getMyAppointments();
-        // KHẮC PHỤC: Kiểm tra kỹ dữ liệu từ BE, nếu null/undefined thì gán mảng rỗng
-        const data = res.data?.data || [];
-        setAppointments(Array.isArray(data) ? data : []);
-      } catch (err) {
-        console.error("Dashboard load error:", err);
-        setAppointments([]); // Nếu lỗi API cũng gán mảng rỗng để giao diện không crash
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAppointments();
+    hospitalService
+      .getMyAppointments()
+      .then((res: any) => setAppointments(res.data?.data || []));
   }, []);
 
+  // HÀM TÍNH GIỜ CHO LỊCH SỬ: 10 STT = 1h
+  const calculateHistoryTime = (stt: number, shift: string) => {
+    const baseH = shift === "Morning" ? 8 : 13;
+    const offset = Math.floor((stt - 1) / 10);
+    const startH = baseH + offset;
+    const endH = startH + 1;
+    return `${startH}:00 - ${endH}:00`;
+  };
+
   return (
-    <div className="max-w-7xl mx-auto py-12 px-4 transition-colors min-h-screen">
-      <div className="flex justify-between items-end mb-10">
-        <div>
-          <h1 className="text-3xl font-black dark:text-white mb-2">
-            {t("profile_dashboard")}
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400">
-            Quản lý các lượt khám bệnh của bạn.
-          </p>
-        </div>
-        <Link
-          to="/book"
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 transition shadow-lg shadow-blue-200 dark:shadow-none"
-        >
-          <Plus size={20} /> {t("book_now")}
-        </Link>
+    <div className="max-w-7xl mx-auto py-12 px-4 pt-24 min-h-screen">
+      <h1 className="text-3xl font-black dark:text-white mb-10 italic">
+        Lịch sử đặt lịch
+      </h1>
+      <div className="grid gap-4">
+        {appointments.map((apt: any) => (
+          <div
+            key={apt._id}
+            className="bg-white dark:bg-gray-900 p-6 rounded-[32px] border dark:border-gray-800 flex justify-between items-center shadow-sm"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center text-blue-600 font-black">
+                {apt.stt}
+              </div>
+              <div>
+                <h3 className="text-lg font-black dark:text-white">
+                  BS. {apt.doctor_id?.user_id?.username}
+                </h3>
+                <p className="text-xs text-gray-500 font-bold uppercase">
+                  {new Date(apt.appointment_date).toLocaleDateString("vi-VN")} |{" "}
+                  {apt.shift} | {calculateHistoryTime(apt.stt, apt.shift)}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setViewTicket(apt)}
+              className="p-3 bg-gray-100 dark:bg-gray-800 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+            >
+              <Ticket />
+            </button>
+          </div>
+        ))}
       </div>
 
-      {loading ? (
-        <div className="flex flex-col items-center justify-center py-32 text-blue-600">
-          <Loader2 className="animate-spin mb-4" size={48} />
-          <span className="font-bold tracking-widest uppercase text-xs">
-            {t("loading")}
-          </span>
-        </div>
-      ) : (
-        <div className="grid gap-6">
-          {/* KHẮC PHỤC: Sử dụng Optional Chaining ?. để an toàn tuyệt đối */}
-          {(appointments?.length || 0) === 0 ? (
-            <div className="bg-gray-50 dark:bg-gray-900 p-16 rounded-[40px] text-center border-2 border-dashed dark:border-gray-800">
-              <AlertCircle className="mx-auto mb-4 text-gray-300" size={64} />
-              <p className="text-gray-500 dark:text-gray-400 font-bold text-lg">
-                Bạn chưa có lịch hẹn nào.
-              </p>
-              <Link
-                to="/book"
-                className="text-blue-600 font-bold mt-4 inline-block underline"
-              >
-                Bắt đầu đặt lịch ngay
-              </Link>
-            </div>
-          ) : (
-            appointments.map((apt: any) => (
-              <div
-                key={apt._id}
-                className="bg-white dark:bg-gray-900 p-6 md:p-8 rounded-[32px] border border-gray-100 dark:border-gray-800 flex flex-col md:flex-row justify-between items-center gap-6 hover:shadow-2xl transition-all duration-300 group"
-              >
-                <div className="flex gap-6 items-center w-full md:w-auto">
-                  <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-500">
-                    <User size={32} />
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-black dark:text-white">
-                      BS. {apt.doctor_id?.user_id?.username || "Chuyên gia"}
-                    </h3>
-                    <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400 mt-2 font-medium">
-                      <span className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-lg">
-                        <Calendar size={14} className="text-blue-500" />
-                        {new Date(apt.appointment_date).toLocaleDateString(
-                          "vi-VN",
-                        )}
-                      </span>
-                      <span className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-lg">
-                        <Clock size={14} className="text-blue-500" />
-                        {apt.time_slot}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+      {viewTicket && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="relative animate-in zoom-in-95">
+            <button
+              onClick={() => setViewTicket(null)}
+              className="absolute -top-12 right-0 text-white font-black flex items-center gap-2 bg-red-600 px-4 py-1 rounded-lg shadow-xl hover:scale-105 transition-transform"
+            >
+              <X size={18} /> ĐÓNG
+            </button>
 
-                <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
-                  <span
-                    className={`px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest border ${
-                      apt.status === "confirmed"
-                        ? "bg-green-50 text-green-700 border-green-100 dark:bg-green-900/20 dark:border-green-800"
-                        : apt.status === "pending"
-                          ? "bg-yellow-50 text-yellow-700 border-yellow-100 dark:bg-yellow-900/20 dark:border-yellow-800"
-                          : "bg-gray-50 text-gray-600 border-gray-100 dark:bg-gray-800 dark:border-gray-700"
-                    }`}
-                  >
-                    {t(apt.status)}
-                  </span>
-                  <Link
-                    to="/medical-records"
-                    className="p-4 bg-gray-50 dark:bg-gray-800 hover:bg-blue-600 hover:text-white rounded-2xl transition-all duration-300 dark:text-white"
-                  >
-                    <ChevronRight size={24} />
-                  </Link>
+            <div className="max-w-md bg-white rounded-[40px] overflow-hidden shadow-2xl border-4 border-blue-600 text-center text-gray-900">
+              <div className="bg-blue-600 p-5 text-white italic font-black uppercase tracking-tighter">
+                Modern Hospital
+              </div>
+              <div className="p-10">
+                <p className="text-[10px] font-black text-gray-400 uppercase mb-1">
+                  Số thứ tự khám
+                </p>
+                <h1 className="text-9xl font-black text-blue-600 mb-4">
+                  {viewTicket.stt}
+                </h1>
+                <p className="font-bold text-blue-600 bg-blue-50 py-2 rounded-xl mb-6">
+                  Dự kiến:{" "}
+                  {calculateHistoryTime(viewTicket.stt, viewTicket.shift)}
+                </p>
+                <div className="space-y-3 text-left border-t pt-6 text-sm">
+                  <div className="flex justify-between font-bold text-gray-900">
+                    <span className="text-gray-400">BÁC SĨ:</span>
+                    <span className="uppercase">
+                      {viewTicket.doctor_id?.user_id?.username}
+                    </span>
+                  </div>
+                  <div className="flex justify-between font-bold text-gray-900">
+                    <span className="text-gray-400">NGÀY KHÁM:</span>
+                    <span>
+                      {new Date(viewTicket.appointment_date).toLocaleDateString(
+                        "vi-VN",
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex justify-between font-bold text-gray-900">
+                    <span className="text-gray-400">BUỔI:</span>
+                    <span>
+                      {viewTicket.shift === "Morning" ? "SÁNG" : "CHIỀU"}
+                    </span>
+                  </div>
                 </div>
               </div>
-            ))
-          )}
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -1,7 +1,10 @@
 import axios from "axios";
 
+export const BASE_URL = "http://localhost:3000";
+export const API_URL = `${BASE_URL}/api/v1`;
+
 const api = axios.create({
-  baseURL: "http://localhost:3000/api/v1",
+  baseURL: API_URL,
   withCredentials: true,
 });
 
@@ -9,13 +12,13 @@ api.interceptors.request.use((config) => {
   const url = config.url || "";
   // Chỉ dùng adminToken cho các request đến endpoint admin hoặc báo cáo
   const isAdminRequest = url.includes("/admin/") || url.includes("/reports");
-  
+
   const adminToken = localStorage.getItem("adminToken");
   const userToken = localStorage.getItem("accessToken");
 
   // Nếu là request admin thì ưu tiên adminToken, ngược lại dùng userToken
-  const token = isAdminRequest ? (adminToken || userToken) : userToken;
-  
+  const token = isAdminRequest ? adminToken || userToken : userToken;
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -30,7 +33,7 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       try {
         const { data } = await axios.post(
-          "http://localhost:3000/api/v1/auth/refresh",
+          `${API_URL}/auth/refresh`,
           {},
           { withCredentials: true },
         );

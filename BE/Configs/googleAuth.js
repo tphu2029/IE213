@@ -8,7 +8,7 @@ passport.use(
     {
       clientID: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "/api/v1/auth/google/callback",
+      callbackURL: "http://localhost:3000/api/v1/auth/google/callback", // Dùng tuyệt đối thay vì tương đối
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -31,6 +31,6 @@ passport.use(
       } catch (error) {
         return done(error, null);
       }
-    }
-  )
+    },
+  ),
 );
