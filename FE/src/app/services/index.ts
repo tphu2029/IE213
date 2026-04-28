@@ -25,16 +25,11 @@ export const patientService = {
 export const hospitalService = {
   getDepartments: () => api.get("/departments/"),
   getAllDoctors: () => api.get("/doctors/"),
-
-  // [NEW] Lấy bác sĩ trống lịch dựa trên Ngày + Buổi + Khoa
   getAvailableDoctors: (date: string, shift: string, deptId: string) =>
     api.get(`/doctors/available?date=${date}&shift=${shift}&deptId=${deptId}`),
-
   getDoctorsByDept: (id: string) => api.get(`/departments/${id}/doctors`),
   getDoctorSchedules: (doctorId: string) =>
     api.get(`/schedules/doctor/${doctorId}`),
-
-  // [CẬP NHẬT] Đặt lịch khám (Gửi kèm Buổi và Bảo hiểm)
   bookAppointment: (data: {
     doctor_id: string;
     appointment_date: string;
@@ -42,8 +37,9 @@ export const hospitalService = {
     reason?: string;
     hasInsurance: boolean;
   }) => api.post("/appointments/book", data),
-
   getMyAppointments: () => api.get("/appointments/my-appointments"),
+  checkAppointmentStatus: (id: string) =>
+    api.get(`/appointments/check-status/${id}`),
 };
 
 // --- DOCTOR PORTAL ---

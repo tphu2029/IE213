@@ -1,13 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate, useSearchParams } from "react-router"; // Thêm useSearchParams để đọc URL
+import { useNavigate, useSearchParams } from "react-router";
 import { hospitalService } from "../services";
 import {
   ShieldCheck,
   Download,
   Loader2,
   CheckCircle,
-  CreditCard,
-  Wallet,
   ArrowLeft,
   ArrowRight,
 } from "lucide-react";
@@ -17,17 +15,16 @@ import { toPng } from "html-to-image";
 
 export function BookAppointment() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams(); // Hook đọc query params (?dept=...)
+  const [searchParams] = useSearchParams();
   const ticketRef = useRef<HTMLDivElement>(null);
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [isPaying, setIsPaying] = useState(false);
+  const [isWaitingPayment, setIsWaitingPayment] = useState(false); // New state
   const [departments, setDepartments] = useState<any[]>([]);
   const [doctors, setDoctors] = useState<any[]>([]);
   const [bookedData, setBookedData] = useState<any>(null);
 
-  // LOGIC TỰ ĐIỀN KHOA: Lấy từ URL nếu có, nếu không thì để rỗng
   const [form, setForm] = useState({
     department_id: searchParams.get("dept") || "",
     date: "",
@@ -65,15 +62,25 @@ export function BookAppointment() {
     }
   };
 
-  const handleFinalProcess = async () => {
-    if (!form.hasInsurance) {
-      setIsPaying(true);
-      // Giả lập thanh toán online
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      setIsPaying(false);
-      toast.success("Thanh toán phí khám thành công!");
-    }
+  // LOGIC POLLING: Kiểm tra trạng thái mỗi 3 giây
+  const startPolling = (id: string) => {
+    const interval = setInterval(async () => {
+      try {
+        const res: any = await hospitalService.checkAppointmentStatus(id);
+        if (res.data.data.status === "confirmed") {
+          clearInterval(interval);
+          setIsWaitingPayment(false);
+          setStep(4); // Nhảy sang trang Ticket thành công
+          toast.success("Thanh toán thành công!");
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }, 3000);
+    setTimeout(() => clearInterval(interval), 600000); // Ngắt sau 10p
+  };
 
+  const handleFinalProcess = async () => {
     setLoading(true);
     try {
       const res: any = await hospitalService.bookAppointment({
@@ -82,8 +89,17 @@ export function BookAppointment() {
         shift: form.shift,
         hasInsurance: form.hasInsurance,
       });
-      setBookedData(res.data.data);
-      setStep(4);
+
+      const data = res.data.data;
+      setBookedData(data);
+
+      if (data.status === "pending") {
+        setStep(3);
+        setIsWaitingPayment(true);
+        startPolling(data._id); // Bắt đầu đợi tiền về
+      } else {
+        setStep(4);
+      }
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Lỗi đặt lịch");
     } finally {
@@ -103,11 +119,8 @@ export function BookAppointment() {
 
   const downloadTicket = () => {
     if (!ticketRef.current) return;
-
-    // GIỮ NGUYÊN LOGIC FIX ẢNH BỊ CẮT
     const width = 450;
     const height = 750;
-
     toPng(ticketRef.current, {
       cacheBust: true,
       canvasWidth: width,
@@ -134,7 +147,7 @@ export function BookAppointment() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pt-24 pb-12 transition-colors">
       <div className="max-w-4xl mx-auto px-4">
-        {/* Stepper Header (Tiến trình) */}
+        {/* Stepper Header */}
         <div className="flex justify-between mb-12 relative">
           {[1, 2, 3, 4].map((i) => (
             <div
@@ -152,7 +165,6 @@ export function BookAppointment() {
           </div>
         </div>
 
-        {/* BƯỚC 1: THÔNG TIN CƠ BẢN */}
         {step === 1 && (
           <div className="bg-white dark:bg-gray-900 p-8 rounded-[40px] shadow-xl border dark:border-gray-800 animate-in fade-in">
             <h2 className="text-2xl font-black mb-8 dark:text-white italic">
@@ -216,7 +228,6 @@ export function BookAppointment() {
           </div>
         )}
 
-        {/* BƯỚC 2: CHỌN BÁC SĨ */}
         {step === 2 && (
           <div className="space-y-6 animate-in slide-in-from-right">
             <h2 className="text-2xl font-black dark:text-white italic">
@@ -248,7 +259,6 @@ export function BookAppointment() {
                 </div>
               ))}
             </div>
-            {/* Nút Quay lại 1 */}
             <div className="flex gap-4 mt-8">
               <button
                 onClick={() => setStep(1)}
@@ -267,69 +277,78 @@ export function BookAppointment() {
           </div>
         )}
 
-        {/* BƯỚC 3: BHYT & THANH TOÁN */}
+        {/* BƯỚC 3: GIAO DIỆN QUÉT MÃ QR THẬT (SEPAY) */}
         {step === 3 && (
           <div className="bg-white dark:bg-gray-900 p-8 rounded-[40px] shadow-xl text-center animate-in zoom-in-95">
-            <ShieldCheck size={64} className="mx-auto text-blue-600 mb-6" />
-            <h2 className="text-2xl font-black mb-8 dark:text-white">
-              Bạn có Bảo Hiểm Y Tế không?
-            </h2>
-            <div className="flex gap-4 max-w-sm mx-auto mb-8">
-              <button
-                onClick={() => setForm({ ...form, hasInsurance: true })}
-                className={`flex-1 py-4 rounded-2xl font-black border-2 transition-all ${form.hasInsurance ? "bg-blue-600 text-white border-blue-600" : "dark:text-gray-400"}`}
-              >
-                CÓ
-              </button>
-              <button
-                onClick={() => setForm({ ...form, hasInsurance: false })}
-                className={`flex-1 py-4 rounded-2xl font-black border-2 transition-all ${!form.hasInsurance ? "bg-blue-600 text-white border-blue-600" : "dark:text-gray-400"}`}
-              >
-                KHÔNG
-              </button>
-            </div>
-
-            {form.hasInsurance ? (
-              <button
-                onClick={handleFinalProcess}
-                disabled={loading}
-                className="w-full bg-blue-600 text-white py-5 rounded-3xl font-black text-xl shadow-lg"
-              >
-                Xác nhận miễn phí khám
-              </button>
-            ) : (
-              <div className="p-8 bg-blue-50 dark:bg-blue-900/20 rounded-[32px] border-2 border-dashed border-blue-200">
-                <Wallet className="mx-auto mb-4 text-blue-600" size={32} />
-                <p className="font-bold text-blue-900 dark:text-blue-300 mb-6 italic">
-                  Phí khám: 150.000 VNĐ. Vui lòng thanh toán Online để nhận số
-                  thứ tự.
-                </p>
+            {!isWaitingPayment ? (
+              <>
+                <ShieldCheck size={64} className="mx-auto text-blue-600 mb-6" />
+                <h2 className="text-2xl font-black mb-8 dark:text-white">
+                  Bạn có Bảo Hiểm Y Tế không?
+                </h2>
+                <div className="flex gap-4 max-w-sm mx-auto mb-8">
+                  <button
+                    onClick={() => setForm({ ...form, hasInsurance: true })}
+                    className={`flex-1 py-4 rounded-2xl font-black border-2 transition-all ${form.hasInsurance ? "bg-blue-600 text-white border-blue-600" : "dark:text-gray-400"}`}
+                  >
+                    CÓ
+                  </button>
+                  <button
+                    onClick={() => setForm({ ...form, hasInsurance: false })}
+                    className={`flex-1 py-4 rounded-2xl font-black border-2 transition-all ${!form.hasInsurance ? "bg-blue-600 text-white border-blue-600" : "dark:text-gray-400"}`}
+                  >
+                    KHÔNG
+                  </button>
+                </div>
                 <button
                   onClick={handleFinalProcess}
-                  disabled={isPaying}
-                  className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black flex items-center justify-center gap-2"
+                  disabled={loading}
+                  className="w-full bg-blue-600 text-white py-5 rounded-3xl font-black text-xl shadow-lg"
                 >
-                  {isPaying ? (
-                    <Loader2 className="animate-spin" />
-                  ) : (
-                    <>
-                      <CreditCard size={20} /> THANH TOÁN & ĐẶT LỊCH
-                    </>
-                  )}
+                  {form.hasInsurance
+                    ? "Xác nhận miễn phí khám"
+                    : "Tiến hành thanh toán phí"}
                 </button>
+                <button
+                  onClick={() => setStep(2)}
+                  className="mt-8 text-sm font-bold text-gray-400 hover:text-blue-600 transition flex items-center justify-center gap-2 mx-auto"
+                >
+                  <ArrowLeft size={16} /> Chọn lại bác sĩ
+                </button>
+              </>
+            ) : (
+              // HIỂN THỊ MÃ QR THẬT
+              <div className="py-4">
+                <h2 className="text-2xl font-black mb-6 dark:text-white">
+                  Quét mã VietQR để thanh toán
+                </h2>
+                <div className="bg-white p-4 inline-block rounded-3xl border-4 border-blue-600 mb-6">
+                  <img
+                    src={`https://img.vietqr.io/image/${bookedData.qrInfo.bankId}-${bookedData.qrInfo.accountNo}-compact2.png?amount=${bookedData.qrInfo.amount}&addInfo=${bookedData.qrInfo.addInfo}&accountName=${bookedData.qrInfo.accountName}`}
+                    alt="VietQR"
+                    className="w-64 h-64"
+                  />
+                </div>
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-[32px] border-2 border-dashed border-blue-200 mb-8">
+                  <p className="text-xs font-bold text-gray-400 uppercase mb-2">
+                    Nội dung chuyển khoản bắt buộc
+                  </p>
+                  <p className="text-3xl font-black text-red-600 tracking-widest">
+                    {bookedData.qrInfo.addInfo}
+                  </p>
+                  <p className="mt-4 font-bold text-lg dark:text-white">
+                    Số tiền: 150.000 VNĐ
+                  </p>
+                </div>
+                <div className="flex items-center justify-center gap-3 text-blue-600 font-bold italic animate-pulse">
+                  <Loader2 className="animate-spin" size={20} />
+                  <span>Đang đợi ngân hàng xác nhận tiền về...</span>
+                </div>
               </div>
             )}
-            {/* Nút Quay lại 2 */}
-            <button
-              onClick={() => setStep(2)}
-              className="mt-8 text-sm font-bold text-gray-400 hover:text-blue-600 transition flex items-center justify-center gap-2 mx-auto"
-            >
-              <ArrowLeft size={16} /> Chọn lại bác sĩ
-            </button>
           </div>
         )}
 
-        {/* BƯỚC 4: KẾT QUẢ TICKET */}
         {step === 4 && bookedData && (
           <div className="animate-in zoom-in-95 duration-500">
             <div className="flex flex-col items-center">

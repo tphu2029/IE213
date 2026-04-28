@@ -9,7 +9,6 @@ const resolvePatientId = async (userId) => {
   return patient._id;
 };
 
-// [PATIENT] Đặt lịch khám mới
 const createAppointment = async (req, res) => {
   try {
     const patient_id = await resolvePatientId(req.user.id);
@@ -19,25 +18,22 @@ const createAppointment = async (req, res) => {
     );
     res
       .status(200)
-      .json({
-        success: true,
-        message: "Appointment booked successfully",
-        data: appointment,
-      });
+      .json({ success: true, message: "Success", data: appointment });
   } catch (error) {
-    if (error.message === "PATIENT_PROFILE_REQUIRED") {
-      return res
-        .status(403)
-        .json({
-          success: false,
-          message: "Tài khoản chưa có hồ sơ bệnh nhân.",
-        });
-    }
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// [PATIENT] Xem lịch sử khám của tôi
+// THÊM HÀM NÀY
+const checkStatus = async (req, res) => {
+  try {
+    const appointment = await appointmentService.checkStatus(req.params.id);
+    res.status(200).json({ success: true, data: appointment });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 const getMyHistory = async (req, res) => {
   try {
     const patient_id = await resolvePatientId(req.user.id);
@@ -49,15 +45,9 @@ const getMyHistory = async (req, res) => {
   }
 };
 
-// [DOCTOR] Lấy lịch hẹn của bác sĩ đang đăng nhập
 const getDoctorAppointments = async (req, res) => {
   try {
     const doctor = await doctorModel.findDoctorByUserId(req.user.id);
-    if (!doctor)
-      return res
-        .status(404)
-        .json({ success: false, message: "Không tìm thấy hồ sơ bác sĩ." });
-
     const appointments = await appointmentService.getDoctorAppointments(
       doctor._id,
     );
@@ -67,14 +57,11 @@ const getDoctorAppointments = async (req, res) => {
   }
 };
 
-// [DOCTOR/ADMIN] Cập nhật trạng thái lịch hẹn
 const updateStatus = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { status } = req.body;
     const updated = await appointmentService.updateAppointmentStatus(
-      id,
-      status,
+      req.params.id,
+      req.body.status,
     );
     res.status(200).json({ success: true, data: updated });
   } catch (error) {
@@ -82,7 +69,6 @@ const updateStatus = async (req, res) => {
   }
 };
 
-// [ADMIN] Lấy tất cả lịch hẹn hệ thống
 const getAllAppointments = async (req, res) => {
   try {
     const appointments = await appointmentModel.getAllAppointments();
@@ -92,11 +78,10 @@ const getAllAppointments = async (req, res) => {
   }
 };
 
-// [ADMIN] Xóa lịch hẹn
 const deleteAppointment = async (req, res) => {
   try {
     await appointmentModel.deleteAppointment(req.params.id);
-    res.status(200).json({ success: true, message: "Đã xóa lịch hẹn." });
+    res.status(200).json({ success: true, message: "Deleted" });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -104,6 +89,7 @@ const deleteAppointment = async (req, res) => {
 
 export const appointmentController = {
   createAppointment,
+  checkStatus, // Export mới
   getMyHistory,
   getDoctorAppointments,
   updateStatus,
