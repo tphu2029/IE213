@@ -7,6 +7,7 @@ import { userService } from "../Services/userService.js";
 const router = e.Router();
 
 router
+  .get("/admin/all", verifyToken, checkRole("admin"), userController.getAllUsers)
   .get("/:id", verifyToken, userController.getProfile)
   .patch(
     "/",
@@ -14,6 +15,5 @@ router
     upload.single("avatar"),
     userController.updateProfile
   )
-  .get("/", verifyToken, checkRole("admin"), userController.getAllUsers)
   .patch("/reset-password", verifyToken, userController.changePassword);
 export const userRoute = router;

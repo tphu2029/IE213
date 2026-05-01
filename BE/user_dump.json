@@ -1,0 +1,36 @@
+{
+  "user": {
+    "_id": "69d461c69e432d44f6d18e8c",
+    "username": "Tran Thien Phu",
+    "email": "ttp@gmail.com",
+    "phone": "0384653248",
+    "password": "$2b$10$PlV80FQcWmDNRC8EipjK0u5BzTH/TCzDy3RKvrLLlS8T9k8.S9Zi6",
+    "avatar": "",
+    "role": "patient",
+    "refreshToken": null,
+    "createdAt": "2026-04-07T01:45:42.023Z",
+    "updatedAt": "2026-04-07T01:45:42.023Z",
+    "__v": 0
+  },
+  "patient": {
+    "_id": "69d461c69e432d44f6d18e8e",
+    "user_id": {
+      "_id": "69d461c69e432d44f6d18e8c",
+      "username": "Tran Thien Phu",
+      "email": "ttp@gmail.com",
+      "phone": "0384653248",
+      "password": "$2b$10$PlV80FQcWmDNRC8EipjK0u5BzTH/TCzDy3RKvrLLlS8T9k8.S9Zi6",
+      "avatar": "",
+      "role": "patient",
+      "refreshToken": null,
+      "createdAt": "2026-04-07T01:45:42.023Z",
+      "updatedAt": "2026-04-07T01:45:42.023Z",
+      "__v": 0
+    },
+    "gender": "Male",
+    "birth_date": "2005-07-21T00:00:00.000Z",
+    "address": "Khanh Hoa",
+    "cccd": "056205005048",
+    "__v": 0
+  }
+}

@@ -7,12 +7,12 @@ import {
   User as UserIcon,
   Menu,
   X,
-  Search,
   Calendar,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useTranslation } from "react-i18next";
+import { BASE_URL } from "@/lib/axios";
 
 export function Header() {
   const { user, logout } = useAuth();
@@ -44,6 +44,12 @@ export function Header() {
   }, [isDark]);
 
   const isActive = (path: string) => location.pathname === path;
+
+  const getAvatarUrl = (path: string | undefined): string | undefined => {
+    if (!path) return undefined;
+    if (path.startsWith("http")) return path;
+    return `${BASE_URL}/${path}`;
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 dark:bg-gray-950/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 transition-all">
@@ -79,7 +85,7 @@ export function Header() {
         <div className="flex items-center gap-2 sm:gap-4">
           {/* Nút Đặt lịch (Desktop) */}
           <Link
-            to="/book-appointment"
+            to="/book"
             className="hidden md:flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition shadow-lg shadow-blue-200 dark:shadow-none"
           >
             <Calendar size={16} /> {t("nav_booking")}
@@ -116,7 +122,7 @@ export function Header() {
               >
                 {user.avatar ? (
                   <img
-                    src={user.avatar}
+                    src={getAvatarUrl(user.avatar)}
                     alt="avatar"
                     className="w-full h-full object-cover"
                   />
@@ -139,14 +145,14 @@ export function Header() {
                     </p>
                   </div>
                   <Link
-                    to="/profile"
+                    to="/users"
                     className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800"
                     onClick={() => setIsProfileOpen(false)}
                   >
                     {t("profile_health")}
                   </Link>
                   <Link
-                    to="/dashboard"
+                    to="/my-appointments"
                     className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-800"
                     onClick={() => setIsProfileOpen(false)}
                   >
@@ -202,7 +208,7 @@ export function Header() {
             </Link>
           ))}
           <Link
-            to="/book-appointment"
+            to="/book"
             className="block p-3 rounded-xl text-base font-bold bg-blue-600 text-white text-center"
             onClick={() => setIsMenuOpen(false)}
           >

@@ -1,58 +1,83 @@
 import api from "../../lib/axios";
-import {
-  Appointment,
-  MedicalHistory,
-  MedicalRecord,
-  User,
-  Medicine,
-  Invoice,
-} from "./types";
 
-// AUTH & USERS
+// --- AUTH & USERS ---
 export const authService = {
   login: (creds: any) => api.post("/auth/login", creds),
   register: (data: any) => api.post("/auth/register", data),
   logout: () => api.post("/auth/logout"),
   getProfile: (id: string | "me") => api.get(`/users/${id}`),
-  updateProfile: (formData: FormData) =>
-    api.patch("/users/", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    }),
+  updateProfile: (data: any) => api.patch("/users/", data),
 };
 
-// HOSPITAL (DEPT, DOCTOR, SCHEDULE, APPOINTMENT)
+// --- HỒ SƠ BỆNH NHÂN ---
+export const patientService = {
+  updateProfile: (data: any) => api.patch("/patients/profile", data), // Cập nhật hồ sơ chung
+  updateBHYT: (formData: FormData) =>
+    api.patch("/patients/update-bhyt", formData),
+  adminGetAllPatients: () => api.get("/patients/admin/all"),
+  adminVerifyBHYT: (id: string, data: { status: string; bhyt_note?: string }) =>
+    api.patch(`/patients/admin/verify/${id}`, data),
+};
+
+// --- BỆNH VIỆN & ĐẶT LỊCH ---
 export const hospitalService = {
   getDepartments: () => api.get("/departments/"),
+  getAllDoctors: () => api.get("/doctors/"),
+  getAvailableDoctors: (date: string, shift: string, deptId: string) =>
+    api.get(`/doctors/available?date=${date}&shift=${shift}&deptId=${deptId}`),
   getDoctorsByDept: (id: string) => api.get(`/departments/${id}/doctors`),
   getDoctorSchedules: (doctorId: string) =>
     api.get(`/schedules/doctor/${doctorId}`),
-  bookAppointment: (data: any) => api.post("/appointments/book", data),
+  bookAppointment: (data: {
+    doctor_id: string;
+    appointment_date: string;
+    shift: string;
+    reason?: string;
+    hasInsurance: boolean;
+  }) => api.post("/appointments/book", data),
   getMyAppointments: () => api.get("/appointments/my-appointments"),
-  updateAppointmentStatus: (id: string, status: string) =>
-    api.patch(`/appointments/${id}`, { status }),
+  checkAppointmentStatus: (id: string) =>
+    api.get(`/appointments/check-status/${id}`),
 };
 
-// MEDICAL (RECORDS, HISTORY, MEDICINES)
+// --- DOCTOR PORTAL ---
+export const doctorService = {
+  getMyDoctorAppointments: () => api.get("/appointments/doctor-appointments"),
+  updateAppointmentStatus: (id: string, status: string) =>
+    api.patch(`/appointments/${id}/status`, { status }),
+  getDoctorProfile: () => api.get("/doctors/me"),
+};
+
+// --- Y TẾ (BỆNH ÁN, TIỀN SỬ, THUỐC) ---
 export const medicalService = {
   getMyRecords: () => api.get("/medical-records/me"),
   getRecordById: (id: string) => api.get(`/medical-records/me/${id}`),
-  createRecord: (data: any) => api.post("/medical-records/", data),
-
   getMyHistory: () => api.get("/medical-histories/me"),
   updateHistory: (data: any) => api.post("/medical-histories/", data),
-
   getMedicines: () => api.get("/medicines/"),
   getMedicineById: (id: string) => api.get(`/medicines/${id}`),
-
-  getPrescription: (recordId: string) =>
-    api.get(`/prescriptions/me/record/${recordId}`),
 };
 
-// BILLING (INVOICE, PAYMENT, NOTIF)
+// --- HÓA ĐƠN & THANH TOÁN ---
 export const billingService = {
   getMyInvoices: () => api.get("/invoices/me"),
-  createInvoice: (data: any) => api.post("/invoices/", data),
+  getInvoiceById: (id: string) => api.get(`/invoices/me/${id}`),
   getMyPayments: () => api.get("/payments/me"),
-  getNotifications: () => api.get("/notifications/me"),
-  markNotifRead: (id: string) => api.patch(`/notifications/${id}/read`),
+};
+
+// --- THÔNG BÁO ---
+export const notificationService = {
+  getMine: () => api.get("/notifications/me"),
+  markAsRead: (id: string) => api.patch(`/notifications/${id}/read`),
+};
+
+// --- ADMIN ---
+export const adminService = {
+  getDashboardStats: () => api.get("/reports"),
+  getAllAppointments: () => api.get("/appointments/admin/all"),
+  updateAppointmentStatus: (id: string, status: string) =>
+    api.patch(`/appointments/${id}/status`, { status }),
+  deleteAppointment: (id: string) => api.delete(`/appointments/${id}`),
+  getAllUsers: () => api.get("/users/admin/all"),
+  getAllDoctors: () => api.get("/doctors/"),
 };

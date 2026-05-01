@@ -1,29 +1,34 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router';
-import { useAuth } from '../contexts/AuthContext';
-import { Mail, Lock, AlertCircle } from 'lucide-react';
-import { toast } from 'sonner';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router";
+import { useAuth } from "../contexts/AuthContext";
+import { Mail, Lock, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 
 export function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setIsLoading(true);
 
     try {
-      await login(email, password);
-      toast.success('Welcome back!');
-      navigate('/dashboard');
+      const user = await login(email, password);
+      toast.success("Đăng nhập thành công!");
+      // Redirect theo role
+      if ((user as any)?.role === "doctor") {
+        navigate("/doctors/dashboard");
+      } else {
+        navigate("/my-appointments");
+      }
     } catch (err: any) {
-      setError(err.message || 'Failed to login');
-      toast.error(err.message || 'Failed to login');
+      setError(err.message || "Failed to login");
+      toast.error(err.message || "Failed to login");
     } finally {
       setIsLoading(false);
     }
@@ -47,7 +52,10 @@ export function Login() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm text-gray-700 mb-2">
+              <label
+                htmlFor="email"
+                className="block text-sm text-gray-700 mb-2"
+              >
                 Email Address
               </label>
               <div className="relative">
@@ -65,7 +73,10 @@ export function Login() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm text-gray-700 mb-2">
+              <label
+                htmlFor="password"
+                className="block text-sm text-gray-700 mb-2"
+              >
                 Password
               </label>
               <div className="relative">
@@ -89,11 +100,17 @@ export function Login() {
                   type="checkbox"
                   className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-600"
                 />
-                <label htmlFor="remember" className="ml-2 text-sm text-gray-700">
+                <label
+                  htmlFor="remember"
+                  className="ml-2 text-sm text-gray-700"
+                >
                   Remember me
                 </label>
               </div>
-              <Link to="/forgot-password" className="text-sm text-blue-600 hover:text-blue-700">
+              <Link
+                to="/forgot-password"
+                className="text-sm text-blue-600 hover:text-blue-700"
+              >
                 Forgot password?
               </Link>
             </div>
@@ -103,14 +120,17 @@ export function Login() {
               disabled={isLoading}
               className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Signing in...' : 'Sign In'}
+              {isLoading ? "Signing in..." : "Sign In"}
             </button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-gray-600">
-              Don't have an account?{' '}
-              <Link to="/register" className="text-blue-600 hover:text-blue-700">
+              Don't have an account?{" "}
+              <Link
+                to="/register"
+                className="text-blue-600 hover:text-blue-700"
+              >
                 Sign up
               </Link>
             </p>

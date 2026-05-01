@@ -1,4 +1,5 @@
 import { userModel } from "../Models/userModel.js";
+import { patientModel } from "../Models/patientModel.js";
 import bcrypt from "bcrypt";
 import {
   generateAccessToken,
@@ -13,7 +14,6 @@ const toPublicUser = (user) => ({
   role: user.role,
 });
 
-/** Tạo JWT + lưu Session — dùng chung cho login email và Google */
 const createSessionAndTokens = async (user) => {
   const accessToken = generateAccessToken(user);
   const refreshToken = generateRefreshToken(user);
@@ -31,7 +31,16 @@ const createSessionAndTokens = async (user) => {
 };
 
 const register = async (body) => {
-  const { username, email, phone, password, role } = body;
+  const {
+    username,
+    email,
+    phone,
+    password,
+    cccd,
+    gender,
+    birth_date,
+    address,
+  } = body;
 
   const existUser = await userModel.findUserByEmail(email);
 
@@ -41,13 +50,28 @@ const register = async (body) => {
 
   const hashPassword = await bcrypt.hash(password, 10);
 
+  // BẢO MẬT: Bất kể body truyền gì, role tạo mới bên ngoài luôn là patient
   const newUser = await userModel.createUser({
     username,
     email,
     phone,
     password: hashPassword,
-    role,
+    role: "patient",
   });
+
+  try {
+    await patientModel.createPatient({
+      user_id: newUser._id,
+      gender: gender || "Other",
+      birth_date: birth_date || null,
+      address: address || "",
+      cccd: cccd || "",
+    });
+  } catch (error) {
+    // Thu hồi tạo user nếu khởi tạo hồ sơ bệnh nhân thất bại
+    await userModel.deleteUser(newUser._id);
+    throw error;
+  }
 
   return newUser;
 };
@@ -74,7 +98,6 @@ const login = async (body) => {
   return createSessionAndTokens(user);
 };
 
-/** Sau khi Passport Google xác thực xong — cùng luồng token/session với login */
 const completeOAuthLogin = async (user) => {
   return createSessionAndTokens(user);
 };

@@ -1,4 +1,5 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, Navigate } from "react-router";
+import { useAuth } from "./contexts/AuthContext";
 
 // Layouts
 import { RootLayout } from "./components/layout/RootLayout";
@@ -22,6 +23,7 @@ import { MedicalRecords } from "./pages/MedicalRecords";
 import { MedicalHistory } from "./pages/MedicalHistory";
 import { Invoices } from "./pages/Invoices";
 import { Profile } from "./pages/Profile";
+import { DoctorDashboard } from "./pages/DoctorDashboard";
 
 // Admin Pages
 import { AdminLogin } from "./pages/admin/AdminLogin";
@@ -30,17 +32,24 @@ import { AdminAppointments } from "./pages/admin/AdminAppointments";
 import { AdminDoctors } from "./pages/admin/AdminDoctors";
 import { AdminUsers } from "./pages/admin/AdminUsers";
 import { AdminPaymentMethods } from "./pages/admin/AdminPaymentMethods";
+import { AdminBHYTVerify } from "./pages/admin/AdminBHYTVerify";
 
-// Route Guards
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AdminRoute } from "./components/AdminRoute";
+
+// Doctor route guard - chỉ cho phép role "doctor"
+function DoctorRoute({ children }: { children: React.ReactNode }) {
+  const { user, isLoading } = useAuth();
+  if (isLoading) return null;
+  if (!user || user.role !== "doctor") return <Navigate to="/login" />;
+  return <>{children}</>;
+}
 
 export const router = createBrowserRouter([
   {
     path: "/",
     Component: RootLayout,
     children: [
-      // --- Public Routes ---
       { index: true, Component: Home },
       { path: "about", Component: About },
       { path: "services", Component: Services },
@@ -49,11 +58,11 @@ export const router = createBrowserRouter([
       { path: "login", Component: Login },
       { path: "register", Component: Register },
       { path: "medicines", Component: Medicines },
-      { path: "lookup", Component: SymptomLookup }, // Trang tra cứu thủ công + AI sơ bộ
+      { path: "lookup", Component: SymptomLookup },
 
       // --- Patient Routes (Yêu cầu đăng nhập) ---
       {
-        path: "dashboard",
+        path: "my-appointments",
         element: (
           <ProtectedRoute>
             <Dashboard />
@@ -61,7 +70,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "book-appointment",
+        path: "book",
         element: (
           <ProtectedRoute>
             <BookAppointment />
@@ -93,7 +102,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "profile",
+        path: "users",
         element: (
           <ProtectedRoute>
             <Profile />
@@ -101,6 +110,16 @@ export const router = createBrowserRouter([
         ),
       },
     ],
+  },
+
+  // --- Doctor Portal ---
+  {
+    path: "/doctors/dashboard",
+    element: (
+      <DoctorRoute>
+        <DoctorDashboard />
+      </DoctorRoute>
+    ),
   },
 
   // --- Admin Routes ---
@@ -121,6 +140,7 @@ export const router = createBrowserRouter([
       { path: "doctors", Component: AdminDoctors },
       { path: "users", Component: AdminUsers },
       { path: "payments", Component: AdminPaymentMethods },
+      { path: "bhyt", Component: AdminBHYTVerify },
     ],
   },
 

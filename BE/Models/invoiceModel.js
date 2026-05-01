@@ -7,20 +7,17 @@ const invoiceSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "patients",
   },
-
   appointment_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "appointments",
   },
-
   total_amount: Number,
-
   status: {
     type: String,
     enum: ["unpaid", "paid"],
     default: "unpaid",
   },
-
+  paymentCode: { type: String, unique: true }, // Thêm field để đối soát Sepay
   created_at: {
     type: Date,
     default: Date.now,
@@ -28,8 +25,6 @@ const invoiceSchema = new mongoose.Schema({
 });
 
 const Invoice = mongoose.model(COLLECTION_NAME, invoiceSchema);
-
-// --- CÁC HÀM THAO TÁC VỚI DATABASE ---
 
 const createInvoice = async (invoiceData) => {
   return await Invoice.create(invoiceData);
@@ -51,16 +46,21 @@ const getInvoiceById = async (id) => {
     .populate("appointment_id");
 };
 
+// THÊM HÀM NÀY
+const getInvoiceByCode = async (code) => {
+  return await Invoice.findOne({ paymentCode: code });
+};
+
 const updateInvoice = async (id, updateData) => {
   return await Invoice.findByIdAndUpdate(id, updateData, { new: true })
     .populate("patient_id")
     .populate("appointment_id");
 };
+
 const deleteInvoice = async (id) => {
   return await Invoice.findByIdAndDelete(id);
 };
 
-// DASHBOARD
 const getTotalRevenue = async () => {
   const result = await Invoice.aggregate([
     { $match: { status: "paid" } },
@@ -96,6 +96,7 @@ export const invoiceModel = {
   getAllInvoices,
   getInvoicesByPatientId,
   getInvoiceById,
+  getInvoiceByCode, // Export mới
   updateInvoice,
   deleteInvoice,
   getTotalRevenue,

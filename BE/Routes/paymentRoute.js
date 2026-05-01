@@ -1,63 +1,40 @@
 import express from "express";
-import { verifyToken } from "../Middlewares/authMiddleware.js";
-import { checkRole } from "../Middlewares/roleMiddleware.js";
-import { requirePatient } from "../Middlewares/patientContextMiddleware.js";
-import { paymentController } from "../Controllers/paymentController.js";
+import { invoiceModel } from "../Models/invoiceModel.js";
+import { appointmentModel } from "../Models/appointmentModel.js";
 
 const router = express.Router();
 
-const readers = ["admin", "receptionist", "doctor"];
-const writers = ["admin", "receptionist"];
+// WEBHOOK XỬ LÝ THANH TOÁN TỰ ĐỘNG TỪ SEPAY GỬI VỀ NGROK
+router.post("/webhook-sepay", async (req, res) => {
+  try {
+    const { content } = req.body;
+    if (!content) return res.status(200).send("OK");
 
-router.get(
-  "/me",
-  verifyToken,
-  checkRole("patient"),
-  requirePatient,
-  paymentController.getMine,
-);
+    console.log("Nội dung CK nhận được:", content);
 
-router.get(
-  "/me/:id",
-  verifyToken,
-  checkRole("patient"),
-  requirePatient,
-  paymentController.getMyById,
-);
+    // Tìm mã MHXXXX trong nội dung
+    const match = content.toUpperCase().match(/MH[A-Z0-9]+/);
+    if (!match) return res.status(200).send("Nội dung không hợp lệ");
 
-router.get(
-  "/",
-  verifyToken,
-  checkRole(...readers),
-  paymentController.getAll,
-);
+    const paymentCode = match[0];
+    const invoice = await invoiceModel.getInvoiceByCode(paymentCode);
 
-router.get(
-  "/:id",
-  verifyToken,
-  checkRole(...readers),
-  paymentController.getById,
-);
+    if (invoice && invoice.status === "unpaid") {
+      // 1. Đổi trạng thái Hóa đơn
+      await invoiceModel.updateInvoice(invoice._id, { status: "paid" });
+      // 2. Đổi trạng thái Lịch hẹn -> Confirmed
+      await appointmentModel.updateAppointment(invoice.appointment_id, {
+        status: "confirmed",
+      });
 
-router.post(
-  "/",
-  verifyToken,
-  checkRole(...writers),
-  paymentController.create,
-);
+      console.log(`✅ Đã xác nhận thanh toán tự động cho: ${paymentCode}`);
+    }
 
-router.patch(
-  "/:id",
-  verifyToken,
-  checkRole(...writers),
-  paymentController.update,
-);
-
-router.delete(
-  "/:id",
-  verifyToken,
-  checkRole(...writers),
-  paymentController.remove,
-);
+    res.status(200).send("OK");
+  } catch (error) {
+    console.error("Lỗi Webhook:", error);
+    res.status(500).send("Internal Error");
+  }
+});
 
 export const paymentRoute = router;

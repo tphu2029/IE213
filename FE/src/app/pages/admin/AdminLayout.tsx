@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useAdmin } from '../../contexts/AdminContext';
-import { useNavigate, NavLink, Outlet, useLocation } from 'react-router';
+import { useState, useEffect } from "react";
+import { useAdmin } from "../../contexts/AdminContext";
+import { useNavigate, NavLink, Outlet } from "react-router";
 import {
   Users,
   Calendar,
@@ -8,242 +8,195 @@ import {
   LogOut,
   LayoutDashboard,
   CreditCard,
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { User } from '../../contexts/AuthContext';
-import { Doctor, Appointment, PaymentMethod } from './types';
+  Loader2,
+  ShieldCheck, // Thêm ShieldCheck vào đây
+} from "lucide-react";
+import { toast } from "sonner";
+import { adminService } from "../../services";
 
 export interface AdminContextType {
-  appointments: Appointment[];
-  doctors: Doctor[];
-  users: User[];
-  paymentMethods: PaymentMethod[];
-  updateAppointmentStatus: (id: string, status: 'confirmed' | 'cancelled' | 'completed') => void;
-  deleteAppointment: (id: string) => void;
-  deleteDoctor: (id: string) => void;
-  saveDoctor: (doctor: Doctor) => void;
-  savePaymentMethod: (method: PaymentMethod) => void;
-  deletePaymentMethod: (id: string) => void;
-  togglePaymentMethodStatus: (id: string) => void;
+  appointments: any[];
+  doctors: any[];
+  users: any[];
+  stats: any;
+  loadingData: boolean;
+  updateAppointmentStatus: (id: string, status: string) => Promise<void>;
+  deleteAppointment: (id: string) => Promise<void>;
+  reloadData: () => void;
+  // Legacy stubs (AdminPaymentMethods, AdminDoctors)
+  paymentMethods?: any[];
+  saveDoctor?: (d: any) => void;
+  deleteDoctor?: (id: string) => void;
+  savePaymentMethod?: (m: any) => void;
+  deletePaymentMethod?: (id: string) => void;
+  togglePaymentMethodStatus?: (id: string) => void;
 }
 
 export function AdminLayout() {
   const { admin, adminLogout } = useAdmin();
   const navigate = useNavigate();
-  const location = useLocation();
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
-  const [doctors, setDoctors] = useState<Doctor[]>([]);
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [appointments, setAppointments] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
+  const [doctors, setDoctors] = useState<any[]>([]);
+  const [stats, setStats] = useState<any>(null);
+  const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
     loadData();
   }, []);
 
-  const loadData = () => {
-    // Load appointments
-    const allAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
-    setAppointments(allAppointments);
-
-    // Load users
-    const allUsers = JSON.parse(localStorage.getItem('users') || '[]');
-    setUsers(allUsers);
-
-    // Load doctors
-    const storedDoctors = JSON.parse(localStorage.getItem('doctors') || JSON.stringify([
-      { id: '1', name: 'Dr. Sarah Johnson', specialty: 'Cardiology', qualifications: 'MD, FACC', experience: '20+ years', education: 'Harvard Medical School', rating: 4.9 },
-      { id: '2', name: 'Dr. Michael Chen', specialty: 'Neurology', qualifications: 'MD, PhD', experience: '15+ years', education: 'Johns Hopkins University', rating: 4.8 },
-      { id: '3', name: 'Dr. Emily Rodriguez', specialty: 'Pediatrics', qualifications: 'MD, FAAP', experience: '12+ years', education: 'Stanford Medical School', rating: 5.0 },
-      { id: '4', name: 'Dr. James Thompson', specialty: 'Orthopedic Surgery', qualifications: 'MD, FAAOS', experience: '18+ years', education: 'Yale Medical School', rating: 4.9 },
-      { id: '5', name: 'Dr. Lisa Park', specialty: 'Internal Medicine', qualifications: 'MD, FACP', experience: '14+ years', education: 'Columbia Medical School', rating: 4.8 },
-      { id: '6', name: 'Dr. Robert Martinez', specialty: 'Emergency Medicine', qualifications: 'MD, FACEP', experience: '16+ years', education: 'Duke Medical School', rating: 4.9 },
-    ]));
-    setDoctors(storedDoctors);
-    if (!localStorage.getItem('doctors')) {
-      localStorage.setItem('doctors', JSON.stringify(storedDoctors));
-    }
-
-    // Load payment methods
-    const storedPaymentMethods = JSON.parse(localStorage.getItem('paymentMethods') || JSON.stringify([
-      { id: '1', name: 'Credit/Debit Card', provider: 'Stripe', type: 'credit_card', status: 'active', isDefault: true },
-      { id: '2', name: 'PayPal', provider: 'PayPal', type: 'digital_wallet', status: 'active', isDefault: false },
-      { id: '3', name: 'Bank Transfer', provider: 'Direct', type: 'bank_transfer', status: 'active', isDefault: false },
-    ]));
-    setPaymentMethods(storedPaymentMethods);
-    if (!localStorage.getItem('paymentMethods')) {
-      localStorage.setItem('paymentMethods', JSON.stringify(storedPaymentMethods));
+  const loadData = async () => {
+    setLoadingData(true);
+    try {
+      const [aptsRes, usersRes, docsRes, statsRes] = await Promise.all([
+        adminService.getAllAppointments(),
+        adminService.getAllUsers(),
+        adminService.getAllDoctors(),
+        adminService.getDashboardStats(),
+      ]);
+      setAppointments(aptsRes.data?.data || []);
+      setUsers(usersRes.data?.data || usersRes.data || []);
+      setDoctors(docsRes.data?.data || []);
+      setStats(statsRes.data?.data || null);
+    } catch (err: any) {
+      toast.error(
+        "Không thể tải dữ liệu admin: " +
+          (err?.response?.data?.message || err.message),
+      );
+    } finally {
+      setLoadingData(false);
     }
   };
 
   const handleLogout = () => {
     adminLogout();
-    toast.success('Logged out successfully');
-    navigate('/admin/login');
+    toast.success("Đã đăng xuất");
+    navigate("/admin/login");
   };
 
-  const updateAppointmentStatus = (appointmentId: string, status: 'confirmed' | 'cancelled' | 'completed') => {
-    const updated = appointments.map((apt: Appointment) =>
-      apt.id === appointmentId ? { ...apt, status } : apt
-    );
-    localStorage.setItem('appointments', JSON.stringify(updated));
-    setAppointments(updated);
-    toast.success(`Appointment ${status}`);
-  };
-
-  const deleteAppointment = (appointmentId: string) => {
-    if (!confirm('Are you sure you want to delete this appointment?')) return;
-    const updated = appointments.filter((apt: Appointment) => apt.id !== appointmentId);
-    localStorage.setItem('appointments', JSON.stringify(updated));
-    setAppointments(updated);
-    toast.success('Appointment deleted');
-  };
-
-  const deleteDoctor = (doctorId: string) => {
-    if (!confirm('Are you sure you want to delete this doctor?')) return;
-    const updated = doctors.filter(d => d.id !== doctorId);
-    setDoctors(updated);
-    localStorage.setItem('doctors', JSON.stringify(updated));
-    toast.success('Doctor deleted');
-  };
-
-  const saveDoctor = (doctor: Doctor) => {
-    let updated;
-    // Check if doctor already exists
-    const existingIndex = doctors.findIndex(d => d.id === doctor.id);
-    
-    if (existingIndex >= 0) {
-      updated = doctors.map(d => d.id === doctor.id ? doctor : d);
-      toast.success('Doctor updated');
-    } else {
-      const newDoctor = { ...doctor, id: Date.now().toString() };
-      updated = [...doctors, newDoctor];
-      toast.success('Doctor added');
+  const updateAppointmentStatus = async (id: string, status: string) => {
+    try {
+      await adminService.updateAppointmentStatus(id, status);
+      setAppointments((prev) =>
+        prev.map((a) => (a._id === id ? { ...a, status } : a)),
+      );
+      toast.success("Cập nhật trạng thái thành công!");
+    } catch {
+      toast.error("Cập nhật thất bại");
     }
-    
-    setDoctors(updated);
-    localStorage.setItem('doctors', JSON.stringify(updated));
   };
 
-  const savePaymentMethod = (method: PaymentMethod) => {
-    let updated;
-    if (method.isDefault) {
-      // Unset previous default
-      paymentMethods.forEach(m => m.isDefault = false);
+  const deleteAppointment = async (id: string) => {
+    if (!confirm("Bạn có chắc muốn xóa lịch hẹn này?")) return;
+    try {
+      await adminService.deleteAppointment(id);
+      setAppointments((prev) => prev.filter((a) => a._id !== id));
+      toast.success("Đã xóa lịch hẹn");
+    } catch {
+      toast.error("Xóa thất bại");
     }
-    const existingIndex = paymentMethods.findIndex(m => m.id === method.id);
-    
-    if (existingIndex >= 0) {
-      updated = paymentMethods.map(m => m.id === method.id ? method : m);
-      toast.success('Payment method updated');
-    } else {
-      const newMethod = { ...method, id: Date.now().toString() };
-      updated = [...paymentMethods, newMethod];
-      toast.success('Payment method added');
-    }
-    
-    setPaymentMethods(updated);
-    localStorage.setItem('paymentMethods', JSON.stringify(updated));
-  };
-
-  const deletePaymentMethod = (id: string) => {
-    if (!confirm('Are you sure you want to delete this payment method?')) return;
-    const updated = paymentMethods.filter(m => m.id !== id);
-    setPaymentMethods(updated);
-    localStorage.setItem('paymentMethods', JSON.stringify(updated));
-    toast.success('Payment method deleted');
-  };
-
-  const togglePaymentMethodStatus = (id: string) => {
-    const updated = paymentMethods.map(m => m.id === id ? { ...m, status: m.status === 'active' ? 'inactive' : 'active' as const } : m);
-    setPaymentMethods(updated);
-    localStorage.setItem('paymentMethods', JSON.stringify(updated));
-    toast.success('Payment method status updated');
   };
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `py-4 border-b-2 transition-colors ${
+    `flex items-center gap-2 py-4 border-b-2 transition-colors whitespace-nowrap ${
       isActive
-        ? 'border-blue-600 text-blue-600'
-        : 'border-transparent text-gray-600 hover:text-gray-900'
+        ? "border-blue-600 text-blue-600 font-bold"
+        : "border-transparent text-gray-500 hover:text-gray-900"
     }`;
 
-  const pendingAppointments = appointments.filter(a => a.status === 'pending').length;
+  const pendingCount = appointments.filter(
+    (a) => a.status === "pending",
+  ).length;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl text-gray-900">Admin Dashboard</h1>
-              <p className="text-gray-600">Welcome back, {admin?.name}</p>
+      <header className="bg-white dark:bg-gray-900 shadow-sm border-b dark:border-gray-800 sticky top-0 z-20">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
+              <Stethoscope size={20} className="text-white" />
             </div>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              Logout
-            </button>
+            <div>
+              <h1 className="text-lg font-black dark:text-white leading-none">
+                Admin Dashboard
+              </h1>
+              <p className="text-xs text-gray-500">
+                Xin chào, {admin?.name || "Admin"}
+              </p>
+            </div>
           </div>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors text-sm font-bold"
+          >
+            <LogOut className="w-4 h-4" /> Đăng xuất
+          </button>
         </div>
       </header>
 
-      {/* Navigation Tabs */}
-      <div className="bg-white border-b sticky top-[88px] z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Nav Tabs */}
+      <div className="bg-white dark:bg-gray-900 border-b dark:border-gray-800 sticky top-[73px] z-10">
+        <div className="max-w-7xl mx-auto px-4">
           <div className="flex gap-8 overflow-x-auto">
             <NavLink to="/admin/dashboard" end className={navLinkClass}>
-              <div className="flex items-center gap-2">
-                <LayoutDashboard className="w-4 h-4" />
-                Overview
-              </div>
+              <LayoutDashboard className="w-4 h-4" /> Tổng quan
             </NavLink>
-            <NavLink to="/admin/dashboard/appointments" className={navLinkClass}>
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                Appointments ({pendingAppointments})
-              </div>
+            <NavLink
+              to="/admin/dashboard/appointments"
+              className={navLinkClass}
+            >
+              <Calendar className="w-4 h-4" /> Lịch hẹn{" "}
+              {pendingCount > 0 && (
+                <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                  {pendingCount}
+                </span>
+              )}
             </NavLink>
             <NavLink to="/admin/dashboard/doctors" className={navLinkClass}>
-              <div className="flex items-center gap-2">
-                <Stethoscope className="w-4 h-4" />
-                Doctors ({doctors.length})
-              </div>
+              <Stethoscope className="w-4 h-4" /> Bác sĩ ({doctors.length})
             </NavLink>
+
             <NavLink to="/admin/dashboard/users" className={navLinkClass}>
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                Users ({users.length})
-              </div>
+              <Users className="w-4 h-4" /> Người dùng
             </NavLink>
+            <NavLink to="/admin/dashboard/bhyt" className={navLinkClass}>
+              <ShieldCheck className="w-4 h-4" /> Duyệt BHYT
+            </NavLink>
+
             <NavLink to="/admin/dashboard/payments" className={navLinkClass}>
-              <div className="flex items-center gap-2">
-                <CreditCard className="w-4 h-4" />
-                Payment Methods
-              </div>
+              <CreditCard className="w-4 h-4" /> Thanh toán
             </NavLink>
           </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Outlet context={{
-          appointments,
-          doctors,
-          users,
-          paymentMethods,
-          updateAppointmentStatus,
-          deleteAppointment,
-          deleteDoctor,
-          saveDoctor,
-          savePaymentMethod,
-          deletePaymentMethod,
-          togglePaymentMethodStatus
-        } satisfies AdminContextType} />
-      </div>
+      {loadingData ? (
+        <div className="flex flex-col items-center justify-center py-32 gap-4 text-blue-600">
+          <Loader2 className="animate-spin" size={48} />
+          <p className="font-black text-xs uppercase tracking-widest text-gray-500">
+            Đang tải dữ liệu...
+          </p>
+        </div>
+      ) : (
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <Outlet
+            context={
+              {
+                appointments,
+                doctors,
+                users,
+                stats,
+                loadingData,
+                updateAppointmentStatus,
+                deleteAppointment,
+                reloadData: loadData,
+              } satisfies AdminContextType
+            }
+          />
+        </div>
+      )}
     </div>
   );
 }

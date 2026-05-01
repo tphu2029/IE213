@@ -1,82 +1,141 @@
 import { appointmentModel } from "../Models/appointmentModel.js";
-import { doctorScheduleModel } from "../Models/doctorScheduleModel.js";
+import { invoiceModel } from "../Models/invoiceModel.js";
 import mongoose from "mongoose";
 import dayjs from "dayjs";
+import { env } from "../Configs/environment.js";
 
 const bookAppointment = async (patient_id, appointmentData) => {
-  const { doctor_id, appointment_date, time_slot, reason } = appointmentData;
+  try {
+    const { doctor_id, appointment_date, shift, reason, hasInsurance } =
+      appointmentData;
 
-  // KIỂM TRA LỊCH LÀM VIỆC CỦA BÁC SĨ ---
+    // KIỂM TRA TRẠNG THÁI BHYT TRONG DATABASE
+    if (hasInsurance === true || hasInsurance === "true") {
+      const patient = await mongoose.model("patients").findById(patient_id);
+      if (!patient || patient.bhyt_status !== "verified") {
+        throw new Error("BHYT_REQUIRED"); // Ném lỗi nếu chưa được duyệt hoặc chưa đăng ký
+      }
+    }
 
-  // Tìm xem appointment_date là thứ mấy trong tuần
-  // dayjs().day() trả về từ 0 (Chủ nhật) đến 6 (Thứ 7)
-  const daysOfWeek = [
-    "Chủ nhật",
-    "Thứ 2",
-    "Thứ 3",
-    "Thứ 4",
-    "Thứ 5",
-    "Thứ 6",
-    "Thứ 7",
-  ];
+    const startOfDate = new Date(appointment_date);
+    startOfDate.setHours(0, 0, 0, 0);
 
-  const dayIndex = dayjs(appointment_date).day();
+    const currentCount = await appointmentModel.countAppointments({
+      doctor_id: new mongoose.Types.ObjectId(doctor_id),
+      appointment_date: startOfDate,
+      shift: shift,
+    });
 
-  const appointmentDayName = daysOfWeek[dayIndex];
+    const nextSTT = (currentCount || 0) + 1;
+    if (nextSTT > 40) throw new Error("SHIFT_FULL");
 
-  // Lấy lịch làm việc của bác sĩ từ DB
-  const doctorSchedules = await doctorScheduleModel.getDoctorScheduleByDoctorId(
-    doctor_id
-  );
+    const dayName = dayjs(appointment_date).format("dddd");
+    const sched = await mongoose.model("doctor_schedules").findOne({
+      doctor_id,
+      day_of_week: dayName,
+      start_time: shift === "Morning" ? { $lt: "12:00" } : { $gte: "12:00" },
+    });
 
-  // Kiểm tra xem bác sĩ có lịch làm việc vào ngày đó không
-  const scheduleForDay = doctorSchedules.find(
-    (schedule) => schedule.day_of_week === appointmentDayName
-  );
+    const baseStartTime = sched
+      ? sched.start_time
+      : shift === "Morning"
+        ? "08:00"
+        : "13:00";
 
-  if (!scheduleForDay) {
-    throw new Error("DOCTOR_NOT_AVAILABLE_DATE"); // Bác sĩ nghỉ ngày này
+    // LOGIC : Nếu không bảo hiểm -> Trạng thái PENDING để chờ quét QR
+    const initialStatus =
+      hasInsurance === true || hasInsurance === "true"
+        ? "confirmed"
+        : "pending";
+
+    const newAppointment = await appointmentModel.createAppointment({
+      patient_id,
+      doctor_id,
+      appointment_date: startOfDate,
+      shift,
+      stt: nextSTT,
+      reason: reason || "Khám sức khỏe",
+      hasInsurance: hasInsurance === true || hasInsurance === "true",
+      status: initialStatus,
+    });
+
+    let qrInfo = null;
+    if (initialStatus === "pending") {
+      const amount = 150000;
+      const paymentCode = `MH${newAppointment._id.toString().slice(-6).toUpperCase()}`;
+
+      await invoiceModel.createInvoice({
+        patient_id: patient_id,
+        appointment_id: newAppointment._id,
+        total_amount: amount,
+        status: "unpaid",
+        paymentCode: paymentCode,
+      });
+
+      qrInfo = {
+        bankId: env.BANK_ID,
+        accountNo: env.BANK_ACCOUNT,
+        accountName: env.BANK_ACCOUNT_NAME,
+        amount,
+        addInfo: paymentCode,
+      };
+    }
+
+    return {
+      ...newAppointment.toObject(),
+      baseStartTime,
+      qrInfo, // Trả về thông tin QR cho FE
+    };
+  } catch (error) {
+    throw error;
   }
-
-  // Kiểm tra khung giờ (time_slot) có nằm trong ca làm việc không
-  if (
-    time_slot < scheduleForDay.start_time ||
-    time_slot > scheduleForDay.end_time
-  ) {
-    throw new Error("INVALID_TIME_SLOT"); // Chọn giờ ngoài ca làm việc
-  }
-
-  // KIỂM TRA TRÙNG LỊCH CỦA NGƯỜI KHÁC
-
-  const existingAppointment = await mongoose.model("appointments").findOne({
-    doctor_id,
-    appointment_date,
-    time_slot,
-    status: { $in: ["pending", "confirmed"] },
-  });
-
-  if (existingAppointment) {
-    throw new Error("CONFLICT_SCHEDULE");
-  }
-  // LƯU VÀO DB
-  const newAppointment = await appointmentModel.createAppointment({
-    patient_id,
-    doctor_id,
-    appointment_date,
-    time_slot,
-    reason,
-    status: "pending",
-  });
-
-  return newAppointment;
 };
 
-const getPatientAppointments = async (patient_id) => {
-  const appointments = await appointmentModel.getAppointmentById(patient_id);
-  return appointments;
+const checkStatus = async (id) => {
+  return await appointmentModel.getAppointmentById(id);
+};
+
+const getAvailableDoctors = async (date, shift, deptId) => {
+  try {
+    const dayName = dayjs(date).format("dddd");
+    const activeSchedules = await mongoose
+      .model("doctor_schedules")
+      .find({ day_of_week: dayName });
+    const doctorIds = activeSchedules
+      .filter((s) =>
+        shift === "Morning" ? s.start_time < "12:00" : s.start_time >= "12:00",
+      )
+      .map((s) => s.doctor_id);
+
+    return await mongoose
+      .model("doctors")
+      .find({
+        _id: { $in: doctorIds },
+        department_id: new mongoose.Types.ObjectId(deptId),
+      })
+      .populate("user_id", "username avatar");
+  } catch (error) {
+    throw error;
+  }
+};
+
+const getPatientAppointments = async (pid) => {
+  return await appointmentModel.getAppointmentsByPatient(pid);
+};
+
+const getDoctorAppointments = async (did) => {
+  return await appointmentModel.getAppointmentsByDoctorPopulated(did);
+};
+
+const updateAppointmentStatus = async (id, status) => {
+  return await appointmentModel.updateAppointment(id, { status });
 };
 
 export const appointmentService = {
-  getPatientAppointments,
   bookAppointment,
+  checkStatus, // Export mới
+  getAvailableDoctors,
+  getPatientAppointments,
+  getDoctorAppointments,
+  updateAppointmentStatus,
 };

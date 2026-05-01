@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import axios from 'axios';
 
 export interface Admin {
   id: string;
@@ -21,36 +22,44 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if admin is logged in on mount
+    // Kiểm tra nếu đã có admin session
     const storedAdmin = localStorage.getItem('admin');
-    if (storedAdmin) {
+    const adminToken = localStorage.getItem('adminToken');
+    if (storedAdmin && adminToken) {
       setAdmin(JSON.parse(storedAdmin));
     }
     setIsLoading(false);
   }, []);
 
   const adminLogin = async (email: string, password: string) => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Default admin credentials
-    if (email === 'admin@modernhospital.com' && password === 'admin123') {
-      const adminUser: Admin = {
-        id: 'admin-1',
-        email: 'admin@modernhospital.com',
-        name: 'Hospital Administrator',
-        role: 'admin',
-      };
-      setAdmin(adminUser);
-      localStorage.setItem('admin', JSON.stringify(adminUser));
-    } else {
-      throw new Error('Invalid admin credentials');
+    // Gọi API login thật với backend
+    const { data } = await axios.post('http://localhost:3000/api/v1/auth/login', {
+      email,
+      password,
+    });
+
+    const user = data.user || data.data;
+    if (!user || user.role !== 'admin') {
+      throw new Error('Tài khoản này không có quyền admin');
     }
+
+    const adminUser: Admin = {
+      id: user._id || user.id,
+      email: user.email,
+      name: user.username || user.name || 'Admin',
+      role: 'admin',
+    };
+
+    // Lưu token và thông tin admin vào localStorage
+    localStorage.setItem('adminToken', data.accessToken);
+    localStorage.setItem('admin', JSON.stringify(adminUser));
+    setAdmin(adminUser);
   };
 
   const adminLogout = () => {
     setAdmin(null);
     localStorage.removeItem('admin');
+    localStorage.removeItem('adminToken');
   };
 
   return (
