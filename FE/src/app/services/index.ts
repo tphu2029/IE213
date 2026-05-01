@@ -11,14 +11,12 @@ export const authService = {
 
 // --- HỒ SƠ BỆNH NHÂN ---
 export const patientService = {
-  createPatientProfile: (data: {
-    user_id: string;
-    gender: string;
-    birth_date: string;
-    address: string;
-    cccd?: string;
-  }) => api.post("/patients/", data),
-  getPatients: () => api.get("/patients/"),
+  updateProfile: (data: any) => api.patch("/patients/profile", data), // Cập nhật hồ sơ chung
+  updateBHYT: (formData: FormData) =>
+    api.patch("/patients/update-bhyt", formData),
+  adminGetAllPatients: () => api.get("/patients/admin/all"),
+  adminVerifyBHYT: (id: string, data: { status: string; bhyt_note?: string }) =>
+    api.patch(`/patients/admin/verify/${id}`, data),
 };
 
 // --- BỆNH VIỆN & ĐẶT LỊCH ---

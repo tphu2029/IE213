@@ -8,61 +8,36 @@ const patientSchema = new mongoose.Schema({
     ref: "users",
     required: true,
   },
+  gender: { type: String },
+  birth_date: { type: Date },
+  address: { type: String },
+  cccd: { type: String, unique: true },
 
-  gender: {
+  // --- THÔNG TIN BHYT ---
+  bhyt_code: { type: String, default: "" },
+  bhyt_initial_clinic: { type: String, default: "" },
+  bhyt_expiration_date: { type: Date },
+  bhyt_proof_image: { type: String, default: "" },
+  bhyt_status: {
     type: String,
+    enum: ["none", "pending", "verified", "rejected"],
+    default: "none",
   },
-
-  birth_date: {
-    type: Date,
-  },
-
-  address: {
-    type: String,
-  },
-
-  cccd: {
-    type: String,
-    unique: true,
-  },
+  bhyt_note: { type: String, default: "" },
 });
 
 const Patient = mongoose.model(COLLECTION_NAME, patientSchema);
 
-// --- CÁC HÀM THAO TÁC VỚI DATABASE ---
-
-const createPatient = async (patientData) => {
-  return await Patient.create(patientData);
-};
-
-const getPatientById = async (id) => {
-  return await Patient.findById(id).populate("user_id");
-};
-
-const getPatientByUserId = async (userId) => {
-  return await Patient.findOne({ user_id: userId }).populate("user_id");
-};
-
-const updatePatient = async (id, updateData) => {
-  return await Patient.findByIdAndUpdate(id, updateData, {
-    new: true,
-  }).populate("user_id");
-};
-
-const deletePatient = async (id) => {
-  return await Patient.findByIdAndDelete(id);
-};
-
-// DASHBOARD
-const countPatients = async () => {
-  return await Patient.countDocuments();
-};
-
 export const patientModel = {
-  createPatient,
-  getPatientById,
-  getPatientByUserId,
-  updatePatient,
-  deletePatient,
-  countPatients,
+  createPatient: (data) => Patient.create(data),
+  getPatientById: (id) => Patient.findById(id).populate("user_id"),
+  getPatientByUserId: (userId) =>
+    Patient.findOne({ user_id: userId }).populate("user_id"),
+  updatePatient: (id, data) =>
+    Patient.findByIdAndUpdate(id, data, { new: true }),
+  updatePatientByUserId: (userId, data) =>
+    Patient.findOneAndUpdate({ user_id: userId }, data, { new: true }),
+  deletePatient: (id) => Patient.findByIdAndDelete(id),
+  countPatients: () => Patient.countDocuments(),
+  getAllPatients: () => Patient.find().populate("user_id"), // Thêm để Admin load danh sách
 };

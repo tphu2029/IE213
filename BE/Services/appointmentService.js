@@ -9,6 +9,14 @@ const bookAppointment = async (patient_id, appointmentData) => {
     const { doctor_id, appointment_date, shift, reason, hasInsurance } =
       appointmentData;
 
+    // KIỂM TRA TRẠNG THÁI BHYT TRONG DATABASE
+    if (hasInsurance === true || hasInsurance === "true") {
+      const patient = await mongoose.model("patients").findById(patient_id);
+      if (!patient || patient.bhyt_status !== "verified") {
+        throw new Error("BHYT_REQUIRED"); // Ném lỗi nếu chưa được duyệt hoặc chưa đăng ký
+      }
+    }
+
     const startOfDate = new Date(appointment_date);
     startOfDate.setHours(0, 0, 0, 0);
 

@@ -1,11 +1,18 @@
-import { useState, useEffect } from 'react';
-import { useAdmin } from '../../contexts/AdminContext';
-import { useNavigate, NavLink, Outlet } from 'react-router';
+import { useState, useEffect } from "react";
+import { useAdmin } from "../../contexts/AdminContext";
+import { useNavigate, NavLink, Outlet } from "react-router";
 import {
-  Users, Calendar, Stethoscope, LogOut, LayoutDashboard, CreditCard, Loader2
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { adminService } from '../../services';
+  Users,
+  Calendar,
+  Stethoscope,
+  LogOut,
+  LayoutDashboard,
+  CreditCard,
+  Loader2,
+  ShieldCheck, // Thêm ShieldCheck vào đây
+} from "lucide-react";
+import { toast } from "sonner";
+import { adminService } from "../../services";
 
 export interface AdminContextType {
   appointments: any[];
@@ -52,7 +59,10 @@ export function AdminLayout() {
       setDoctors(docsRes.data?.data || []);
       setStats(statsRes.data?.data || null);
     } catch (err: any) {
-      toast.error('Không thể tải dữ liệu admin: ' + (err?.response?.data?.message || err.message));
+      toast.error(
+        "Không thể tải dữ liệu admin: " +
+          (err?.response?.data?.message || err.message),
+      );
     } finally {
       setLoadingData(false);
     }
@@ -60,39 +70,43 @@ export function AdminLayout() {
 
   const handleLogout = () => {
     adminLogout();
-    toast.success('Đã đăng xuất');
-    navigate('/admin/login');
+    toast.success("Đã đăng xuất");
+    navigate("/admin/login");
   };
 
   const updateAppointmentStatus = async (id: string, status: string) => {
     try {
       await adminService.updateAppointmentStatus(id, status);
-      setAppointments(prev => prev.map(a => a._id === id ? { ...a, status } : a));
-      toast.success('Cập nhật trạng thái thành công!');
+      setAppointments((prev) =>
+        prev.map((a) => (a._id === id ? { ...a, status } : a)),
+      );
+      toast.success("Cập nhật trạng thái thành công!");
     } catch {
-      toast.error('Cập nhật thất bại');
+      toast.error("Cập nhật thất bại");
     }
   };
 
   const deleteAppointment = async (id: string) => {
-    if (!confirm('Bạn có chắc muốn xóa lịch hẹn này?')) return;
+    if (!confirm("Bạn có chắc muốn xóa lịch hẹn này?")) return;
     try {
       await adminService.deleteAppointment(id);
-      setAppointments(prev => prev.filter(a => a._id !== id));
-      toast.success('Đã xóa lịch hẹn');
+      setAppointments((prev) => prev.filter((a) => a._id !== id));
+      toast.success("Đã xóa lịch hẹn");
     } catch {
-      toast.error('Xóa thất bại');
+      toast.error("Xóa thất bại");
     }
   };
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-2 py-4 border-b-2 transition-colors whitespace-nowrap ${
       isActive
-        ? 'border-blue-600 text-blue-600 font-bold'
-        : 'border-transparent text-gray-500 hover:text-gray-900'
+        ? "border-blue-600 text-blue-600 font-bold"
+        : "border-transparent text-gray-500 hover:text-gray-900"
     }`;
 
-  const pendingCount = appointments.filter(a => a.status === 'pending').length;
+  const pendingCount = appointments.filter(
+    (a) => a.status === "pending",
+  ).length;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -104,8 +118,12 @@ export function AdminLayout() {
               <Stethoscope size={20} className="text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-black dark:text-white leading-none">Admin Dashboard</h1>
-              <p className="text-xs text-gray-500">Xin chào, {admin?.name || 'Admin'}</p>
+              <h1 className="text-lg font-black dark:text-white leading-none">
+                Admin Dashboard
+              </h1>
+              <p className="text-xs text-gray-500">
+                Xin chào, {admin?.name || "Admin"}
+              </p>
             </div>
           </div>
           <button
@@ -124,15 +142,28 @@ export function AdminLayout() {
             <NavLink to="/admin/dashboard" end className={navLinkClass}>
               <LayoutDashboard className="w-4 h-4" /> Tổng quan
             </NavLink>
-            <NavLink to="/admin/dashboard/appointments" className={navLinkClass}>
-              <Calendar className="w-4 h-4" /> Lịch hẹn {pendingCount > 0 && <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">{pendingCount}</span>}
+            <NavLink
+              to="/admin/dashboard/appointments"
+              className={navLinkClass}
+            >
+              <Calendar className="w-4 h-4" /> Lịch hẹn{" "}
+              {pendingCount > 0 && (
+                <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                  {pendingCount}
+                </span>
+              )}
             </NavLink>
             <NavLink to="/admin/dashboard/doctors" className={navLinkClass}>
               <Stethoscope className="w-4 h-4" /> Bác sĩ ({doctors.length})
             </NavLink>
+
             <NavLink to="/admin/dashboard/users" className={navLinkClass}>
-              <Users className="w-4 h-4" /> Người dùng ({users.length})
+              <Users className="w-4 h-4" /> Người dùng
             </NavLink>
+            <NavLink to="/admin/dashboard/bhyt" className={navLinkClass}>
+              <ShieldCheck className="w-4 h-4" /> Duyệt BHYT
+            </NavLink>
+
             <NavLink to="/admin/dashboard/payments" className={navLinkClass}>
               <CreditCard className="w-4 h-4" /> Thanh toán
             </NavLink>
@@ -144,14 +175,26 @@ export function AdminLayout() {
       {loadingData ? (
         <div className="flex flex-col items-center justify-center py-32 gap-4 text-blue-600">
           <Loader2 className="animate-spin" size={48} />
-          <p className="font-black text-xs uppercase tracking-widest text-gray-500">Đang tải dữ liệu...</p>
+          <p className="font-black text-xs uppercase tracking-widest text-gray-500">
+            Đang tải dữ liệu...
+          </p>
         </div>
       ) : (
         <div className="max-w-7xl mx-auto px-4 py-8">
-          <Outlet context={{
-            appointments, doctors, users, stats, loadingData,
-            updateAppointmentStatus, deleteAppointment, reloadData: loadData
-          } satisfies AdminContextType} />
+          <Outlet
+            context={
+              {
+                appointments,
+                doctors,
+                users,
+                stats,
+                loadingData,
+                updateAppointmentStatus,
+                deleteAppointment,
+                reloadData: loadData,
+              } satisfies AdminContextType
+            }
+          />
         </div>
       )}
     </div>

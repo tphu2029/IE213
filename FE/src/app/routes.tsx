@@ -32,6 +32,7 @@ import { AdminAppointments } from "./pages/admin/AdminAppointments";
 import { AdminDoctors } from "./pages/admin/AdminDoctors";
 import { AdminUsers } from "./pages/admin/AdminUsers";
 import { AdminPaymentMethods } from "./pages/admin/AdminPaymentMethods";
+import { AdminBHYTVerify } from "./pages/admin/AdminBHYTVerify";
 
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AdminRoute } from "./components/AdminRoute";
@@ -139,6 +140,7 @@ export const router = createBrowserRouter([
       { path: "doctors", Component: AdminDoctors },
       { path: "users", Component: AdminUsers },
       { path: "payments", Component: AdminPaymentMethods },
+      { path: "bhyt", Component: AdminBHYTVerify },
     ],
   },
 
