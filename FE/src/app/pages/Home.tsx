@@ -25,26 +25,26 @@ export function Home() {
   const servicesPreview = [
     {
       icon: Activity,
-      title: "Emergency Care",
-      desc: "24/7 rapid response.",
+      title: "Cấp Cứu 24/7",
+      desc: "Phản ứng nhanh chóng, cứu chữa kịp thời mọi lúc mọi nơi.",
       img: "https://images.unsplash.com/photo-1721114989769-0423619f03d2?q=80&w=1080",
     },
     {
       icon: Heart,
-      title: "Cardiology",
-      desc: "Heart health experts.",
+      title: "Khoa Tim Mạch",
+      desc: "Chuyên gia hàng đầu về sức khỏe và các bệnh lý tim mạch.",
       img: "https://images.unsplash.com/photo-1656337426914-5e5ba162d606?q=80&w=1080",
     },
     {
       icon: Brain,
-      title: "Neurology",
-      desc: "Brain & Nerve care.",
+      title: "Khoa Thần Kinh",
+      desc: "Chẩn đoán và điều trị chuyên sâu bệnh lý não bộ, dây thần kinh.",
       img: "https://images.unsplash.com/photo-1725693485717-dbf8eac577c6?q=80&w=1080",
     },
     {
       icon: Baby,
-      title: "Pediatrics",
-      desc: "Child healthcare specialists.",
+      title: "Khoa Nhi",
+      desc: "Chăm sóc sức khỏe toàn diện và tận tâm cho trẻ nhỏ.",
       img: "https://images.unsplash.com/photo-1758691463331-2ac00e6f676f?q=80&w=1080",
     },
   ];

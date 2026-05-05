@@ -38,6 +38,8 @@ export const hospitalService = {
   getMyAppointments: () => api.get("/appointments/my-appointments"),
   checkAppointmentStatus: (id: string) =>
     api.get(`/appointments/check-status/${id}`),
+  cancelAppointment: (id: string) =>
+    api.patch(`/appointments/${id}/cancel`),
 };
 
 // --- DOCTOR PORTAL ---

@@ -36,6 +36,7 @@ import { AdminBHYTVerify } from "./pages/admin/AdminBHYTVerify";
 
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AdminRoute } from "./components/AdminRoute";
+import { NotFoundPage } from "./pages/NotFoundPage";
 
 // Doctor route guard - chỉ cho phép role "doctor"
 function DoctorRoute({ children }: { children: React.ReactNode }) {
@@ -144,16 +145,9 @@ export const router = createBrowserRouter([
     ],
   },
 
-  // --- 404 Page (Tùy chọn) ---
+  // --- 404 Page ---
   {
     path: "*",
-    element: (
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <h1 className="text-4xl font-bold">404 - Không tìm thấy trang</h1>
-        <a href="/" className="mt-4 text-blue-600 hover:underline">
-          Quay lại trang chủ
-        </a>
-      </div>
-    ),
+    element: <NotFoundPage />,
   },
 ]);

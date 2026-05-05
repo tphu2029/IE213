@@ -4,14 +4,17 @@ import {
   registerValidate,
   loginValidate,
 } from "../Middlewares/authValidate.js";
-
 import { verifyToken } from "../Middlewares/authMiddleware.js";
+import {
+  loginRateLimit,
+  registerRateLimit,
+} from "../Middlewares/rateLimitMiddleware.js";
 
 const router = express.Router();
 
-router.post("/register", registerValidate, authController.register);
+router.post("/register", registerRateLimit, registerValidate, authController.register);
 
-router.post("/login", loginValidate, authController.login);
+router.post("/login", loginRateLimit, loginValidate, authController.login);
 
 /** Cookie httpOnly refreshToken — không cần gửi Bearer access */
 router.post("/refresh", authController.refresh);
@@ -19,3 +22,4 @@ router.post("/refresh", authController.refresh);
 router.post("/logout", verifyToken, authController.logout);
 
 export const authRoute = router;
+

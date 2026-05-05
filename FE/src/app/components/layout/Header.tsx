@@ -13,6 +13,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import { BASE_URL } from "@/lib/axios";
+import { NotificationBell } from "../NotificationBell";
 
 export function Header() {
   const { user, logout } = useAuth();
@@ -100,6 +101,9 @@ export function Header() {
           >
             <Globe size={18} /> <span>{i18n.language.toUpperCase()}</span>
           </button>
+
+          {/* Notification Bell (chỉ hiện khi đã login) */}
+          {user && <NotificationBell />}
 
           {/* Nút Chế độ tối */}
           <button

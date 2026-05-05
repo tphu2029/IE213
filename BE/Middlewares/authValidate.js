@@ -34,12 +34,6 @@ const registerSchema = Joi.object({
         "Mật khẩu phải bao gồm ít nhất 1 chữ hoa, 1 chữ thường, 1 chữ số và 1 ký tự đặc biệt",
       "any.required": "Trường mật khẩu là bắt buộc",
     }),
-  role: Joi.string()
-    .valid("admin", "doctor", "patient")
-    .default("patient")
-    .messages({
-      "any.only": "Role phải là admin, doctor hoặc patient",
-    }),
   cccd: Joi.string().length(12).pattern(/^\d+$/).allow("").optional().messages({
     "string.length": "CCCD phải đúng 12 chữ số",
     "string.pattern.base": "CCCD chỉ được bao gồm các ký tự số",

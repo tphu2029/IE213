@@ -87,12 +87,39 @@ const deleteAppointment = async (req, res) => {
   }
 };
 
+const cancelAppointment = async (req, res) => {
+  try {
+    const patient_id = await resolvePatientId(req.user.id);
+    const updated = await appointmentService.cancelAppointment(
+      req.params.id,
+      patient_id,
+    );
+    res.status(200).json({ success: true, data: updated });
+  } catch (error) {
+    const errorMap = {
+      APPOINTMENT_NOT_FOUND: { status: 404, msg: "Không tìm thấy lịch hẹn" },
+      FORBIDDEN: { status: 403, msg: "Bạn không có quyền huỷ lịch này" },
+      CANNOT_CANCEL: {
+        status: 400,
+        msg: "Không thể huỷ lịch ở trạng thái này",
+      },
+    };
+    const mapped = errorMap[error.message];
+    if (mapped)
+      return res
+        .status(mapped.status)
+        .json({ success: false, message: mapped.msg });
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 export const appointmentController = {
   createAppointment,
-  checkStatus, // Export mới
+  checkStatus,
   getMyHistory,
   getDoctorAppointments,
   updateStatus,
   getAllAppointments,
   deleteAppointment,
+  cancelAppointment,
 };

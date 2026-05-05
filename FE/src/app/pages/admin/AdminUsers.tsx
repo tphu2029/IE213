@@ -1,14 +1,18 @@
+import { useState } from 'react';
 import { useOutletContext } from 'react-router';
 import { AdminContextType } from './AdminLayout';
-import { User, Mail, Phone, Calendar } from 'lucide-react';
+import { User, Mail, Phone, Calendar, Search, Filter } from 'lucide-react';
+import { BASE_URL } from '@/lib/axios';
 
 export function AdminUsers() {
   const { users, appointments } = useOutletContext<AdminContextType>();
+  const [search, setSearch] = useState('');
+  const [roleFilter, setRoleFilter] = useState<string>('all');
 
   const getAvatarUrl = (path: string | undefined): string | undefined => {
     if (!path) return undefined;
     if (path.startsWith('http')) return path;
-    return `http://localhost:5000/uploads/${path}`;
+    return `${BASE_URL}/uploads/${path}`;
   };
 
   const getRoleBadge = (role: string) => {
@@ -22,11 +26,51 @@ export function AdminUsers() {
     }
   };
 
+  // Lọc user theo search và role
+  const filteredUsers = users.filter((user) => {
+    const matchSearch =
+      !search ||
+      user.username?.toLowerCase().includes(search.toLowerCase()) ||
+      user.email?.toLowerCase().includes(search.toLowerCase());
+    const matchRole = roleFilter === 'all' || user.role === roleFilter;
+    return matchSearch && matchRole;
+  });
+
   return (
     <div className="bg-white dark:bg-gray-900 rounded-[24px] shadow-sm border border-gray-100 dark:border-gray-800 p-6">
-      <div className="mb-8">
+      <div className="mb-6">
         <h2 className="text-2xl font-black dark:text-white">Người dùng hệ thống</h2>
-        <p className="text-gray-500 text-sm font-medium">Quản lý tất cả tài khoản đã đăng ký trên nền tảng ({users.length})</p>
+        <p className="text-gray-500 text-sm font-medium">
+          Quản lý tất cả tài khoản đã đăng ký ({users.length} tổng •{' '}
+          {filteredUsers.length} hiển thị)
+        </p>
+      </div>
+
+      {/* Search & Filter */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        <div className="relative flex-1">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Tìm theo tên hoặc email..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm font-medium dark:text-white focus:outline-none focus:border-blue-400 transition"
+          />
+        </div>
+        <div className="relative">
+          <Filter size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+            className="pl-9 pr-8 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm font-bold dark:text-white focus:outline-none focus:border-blue-400 transition appearance-none cursor-pointer"
+          >
+            <option value="all">Tất cả vai trò</option>
+            <option value="patient">Bệnh nhân</option>
+            <option value="doctor">Bác sĩ</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
       </div>
 
       <div className="overflow-x-auto">
@@ -41,12 +85,16 @@ export function AdminUsers() {
             </tr>
           </thead>
           <tbody className="divide-y dark:divide-gray-800">
-            {users.length === 0 ? (
+            {filteredUsers.length === 0 ? (
               <tr>
-                <td colSpan={5} className="py-20 text-center text-gray-400 italic">Chưa có người dùng nào</td>
+                <td colSpan={5} className="py-20 text-center text-gray-400 italic">
+                  {search || roleFilter !== 'all'
+                    ? 'Không tìm thấy người dùng phù hợp'
+                    : 'Chưa có người dùng nào'}
+                </td>
               </tr>
-            ) : users.map(user => {
-              const userAppointments = appointments.filter(a => 
+            ) : filteredUsers.map(user => {
+              const userAppointments = appointments.filter(a =>
                 a.patient_id?.user_id?._id === user._id || a.patient_id === user._id
               );
               const avatar = getAvatarUrl(user.avatar);
@@ -57,7 +105,7 @@ export function AdminUsers() {
                   <td className="py-4 px-5">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0 border border-transparent group-hover:border-blue-200 transition-colors">
-                        {avatar 
+                        {avatar
                           ? <img src={avatar} alt={user.username} className="w-full h-full object-cover" />
                           : <User size={20} className="text-gray-400" />
                         }
@@ -103,3 +151,4 @@ export function AdminUsers() {
     </div>
   );
 }
+

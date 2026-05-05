@@ -14,7 +14,9 @@ import {
   LayoutDashboard,
   ChevronRight,
   AlertCircle,
+  Search,
 } from "lucide-react";
+import { BASE_URL } from "@/lib/axios";
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; darkBg: string }> = {
   pending:     { label: "Chờ xác nhận", color: "text-yellow-600", bg: "bg-yellow-50",   darkBg: "dark:bg-yellow-900/20"  },
@@ -40,6 +42,7 @@ export function DoctorDashboard() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"today" | "all">("today");
   const [updating, setUpdating] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     loadAppointments();
@@ -76,7 +79,14 @@ export function DoctorDashboard() {
   const todayApts = appointments.filter(
     (a) => new Date(a.appointment_date).toISOString().split("T")[0] === today
   );
-  const displayApts = activeTab === "today" ? todayApts : appointments;
+  const baseApts = activeTab === "today" ? todayApts : appointments;
+  // Filter by search
+  const displayApts = baseApts.filter((a) => {
+    if (!searchTerm) return true;
+    const name = (a.patient_id?.user_id?.username || "").toLowerCase();
+    const reason = (a.reason || "").toLowerCase();
+    return name.includes(searchTerm.toLowerCase()) || reason.includes(searchTerm.toLowerCase());
+  });
 
   const stats = {
     total: appointments.length,
@@ -107,13 +117,17 @@ export function DoctorDashboard() {
           <div className="p-6 border-b dark:border-gray-800">
             <div className="flex items-center gap-3">
               {user?.avatar ? (
-                <img src={user.avatar.startsWith('http') ? user.avatar : `http://localhost:5000/uploads/${user.avatar}`} 
-                  alt="Avatar" className="w-12 h-12 rounded-2xl object-cover" />
+                <img
+                  src={user.avatar.startsWith('http') ? user.avatar : `${BASE_URL}/uploads/${user.avatar}`}
+                  alt="Avatar"
+                  className="w-12 h-12 rounded-2xl object-cover"
+                />
               ) : (
                 <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center">
                   <User size={24} className="text-blue-600" />
                 </div>
               )}
+
               <div>
                 <p className="font-black text-sm dark:text-white">{user?.username}</p>
                 <p className="text-xs text-blue-600 font-bold">Bác sĩ</p>
@@ -186,9 +200,22 @@ export function DoctorDashboard() {
                   Tất cả ({appointments.length})
                 </button>
               </div>
-              <button onClick={loadAppointments} className="text-xs text-blue-600 font-bold hover:underline">
-                Làm mới
-              </button>
+              <div className="flex items-center gap-3">
+                {/* Search */}
+                <div className="relative hidden sm:block">
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Tìm bệnh nhân..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-9 pr-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm dark:text-white focus:outline-none focus:border-blue-400 transition w-44"
+                  />
+                </div>
+                <button onClick={loadAppointments} className="text-xs text-blue-600 font-bold hover:underline">
+                  Làm mới
+                </button>
+              </div>
             </div>
 
             {/* List */}

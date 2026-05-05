@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useOutletContext } from 'react-router';
 import { AdminContextType } from './AdminLayout';
-import { Search, CheckCircle, XCircle, Trash2, CreditCard, User, Stethoscope } from 'lucide-react';
+import { Search, CheckCircle, XCircle, Trash2, CreditCard, User, Stethoscope, Filter } from 'lucide-react';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
   pending:     { label: "Chờ xác nhận", color: "text-yellow-600", bg: "bg-yellow-100 dark:bg-yellow-900/30" },
@@ -14,33 +14,56 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }
 export function AdminAppointments() {
   const { appointments, updateAppointmentStatus, deleteAppointment } = useOutletContext<AdminContextType>();
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
 
   const filteredAppointments = appointments.filter(apt => {
     const patientName = (apt.patient_id?.user_id?.username || apt.patient_id?.username || '').toLowerCase();
     const doctorName = (apt.doctor_id?.user_id?.username || apt.doctor_id?.username || '').toLowerCase();
     const reason = (apt.reason || '').toLowerCase();
     const search = searchTerm.toLowerCase();
-    return patientName.includes(search) || doctorName.includes(search) || reason.includes(search);
+    const matchSearch = patientName.includes(search) || doctorName.includes(search) || reason.includes(search);
+    const matchStatus = statusFilter === 'all' || apt.status === statusFilter;
+    return matchSearch && matchStatus;
   });
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-[24px] shadow-sm border border-gray-100 dark:border-gray-800 p-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
           <h2 className="text-2xl font-black dark:text-white">Quản lý lịch hẹn</h2>
-          <p className="text-gray-500 text-sm">Xem và cập nhật trạng thái các lịch khám trong hệ thống</p>
+          <p className="text-gray-500 text-sm">
+            {filteredAppointments.length}/{appointments.length} lịch hẹn
+          </p>
         </div>
-        <div className="relative group">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
-          <input
-            type="text"
-            placeholder="Tìm theo tên bệnh nhân, bác sĩ..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-800 border-none rounded-2xl w-full md:w-80 focus:ring-2 focus:ring-blue-500 transition-all text-sm dark:text-white"
-          />
+        <div className="flex flex-col sm:flex-row gap-3">
+          {/* Search */}
+          <div className="relative group">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+            <input
+              type="text"
+              placeholder="Tìm theo tên bệnh nhân, bác sĩ..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl w-full sm:w-64 focus:outline-none focus:border-blue-400 transition-all text-sm dark:text-white"
+            />
+          </div>
+          {/* Status filter */}
+          <div className="relative">
+            <Filter size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="pl-9 pr-8 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl text-sm font-bold dark:text-white focus:outline-none focus:border-blue-400 transition appearance-none cursor-pointer"
+            >
+              <option value="all">Tất cả trạng thái</option>
+              {Object.entries(STATUS_CONFIG).map(([key, cfg]) => (
+                <option key={key} value={key}>{cfg.label}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
+
 
       <div className="grid grid-cols-1 gap-4">
         {filteredAppointments.length === 0 ? (

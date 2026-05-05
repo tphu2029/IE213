@@ -117,6 +117,11 @@ const resources = {
       dept_gastro: "Tiêu hóa",
       dept_neurology: "Thần kinh",
       dept_ortho: "Cơ xương khớp",
+
+      // Tra cứu triệu chứng
+      manual_search: "Tìm kiếm thủ công",
+      ai_assistant: "Trợ lý AI",
+      search_placeholder: "Nhập triệu chứng hoặc tên khoa...",
     },
   },
   en: {
@@ -226,6 +231,10 @@ const resources = {
       dept_gastro: "Gastroenterology",
       dept_neurology: "Neurology",
       dept_ortho: "Orthopedics",
+
+      manual_search: "Manual Search",
+      ai_assistant: "AI Assistant",
+      search_placeholder: "Enter symptoms or department...",
     },
   },
 };

@@ -29,6 +29,13 @@ router.patch(
   checkRole("doctor", "admin"),
   appointmentController.updateStatus,
 );
+// Bệnh nhân tự huỷ lịch của mình
+router.patch(
+  "/:id/cancel",
+  verifyToken,
+  checkRole("patient"),
+  appointmentController.cancelAppointment,
+);
 router.get(
   "/admin/all",
   verifyToken,
@@ -46,3 +53,4 @@ router.delete(
 router.get("/check-status/:id", verifyToken, appointmentController.checkStatus);
 
 export const appointmentRoute = router;
+

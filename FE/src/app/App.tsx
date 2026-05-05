@@ -3,15 +3,18 @@ import { router } from "./routes.tsx";
 import { AuthProvider } from "./contexts/AuthContext";
 import { AdminProvider } from "./contexts/AdminContext";
 import { Toaster } from "sonner";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AdminProvider>
-        {/* RouterProvider quản lý toàn bộ các trang */}
-        <RouterProvider router={router} />
-        <Toaster position="top-right" richColors duration={2000} />
-      </AdminProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <AdminProvider>
+          <RouterProvider router={router} />
+          <Toaster position="top-right" richColors duration={2000} />
+        </AdminProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
+

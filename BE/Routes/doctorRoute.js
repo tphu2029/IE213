@@ -5,11 +5,9 @@ import { checkRole } from "../Middlewares/roleMiddleware.js";
 
 const router = e.Router();
 
-// Lấy danh sách bác sĩ chung
+// Lấy danh sách bác sĩ chung (Public)
 router.get(
   "/",
-  verifyToken,
-  checkRole("doctor", "admin", "patient"),
   doctorController.getDoctors,
 );
 
@@ -24,11 +22,9 @@ router.get(
   doctorController.getMyDoctorProfile,
 );
 
-// Chi tiết bác sĩ theo ID
+// Chi tiết bác sĩ theo ID 
 router.get(
   "/:id",
-  verifyToken,
-  checkRole("doctor", "admin", "patient"),
   doctorController.getDoctorDetail,
 );
 

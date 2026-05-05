@@ -4,6 +4,7 @@ import {
   Calendar, Stethoscope, Users, TrendingUp, Clock,
   CheckCircle, XCircle, Activity, ArrowUpRight, User
 } from 'lucide-react';
+import { BASE_URL } from '@/lib/axios';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
   pending:     { label: "Chờ xác nhận", color: "text-yellow-600", bg: "bg-yellow-100 dark:bg-yellow-900/30" },
@@ -18,7 +19,7 @@ const MONTH_NAMES = ["Th1","Th2","Th3","Th4","Th5","Th6","Th7","Th8","Th9","Th10
 function getAvatarUrl(path: string | undefined): string | undefined {
   if (!path) return undefined;
   if (path.startsWith('http')) return path;
-  return `http://localhost:5000/uploads/${path}`;
+  return `${BASE_URL}/uploads/${path}`;
 }
 
 export function AdminOverview() {

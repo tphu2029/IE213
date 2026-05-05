@@ -131,11 +131,34 @@ const updateAppointmentStatus = async (id, status) => {
   return await appointmentModel.updateAppointment(id, { status });
 };
 
+const cancelAppointment = async (appointmentId, patientId) => {
+  const appointment = await appointmentModel.getAppointmentById(appointmentId);
+
+  if (!appointment) throw new Error("APPOINTMENT_NOT_FOUND");
+
+  // Kiểm tra ownership: appointment phải thuộc về patient này
+  const aptPatientId = appointment.patient_id?._id ?? appointment.patient_id;
+  if (String(aptPatientId) !== String(patientId)) {
+    throw new Error("FORBIDDEN");
+  }
+
+  // Chỉ cho phép huỷ khi status là pending hoặc confirmed
+  const cancellableStatuses = ["pending", "confirmed"];
+  if (!cancellableStatuses.includes(appointment.status)) {
+    throw new Error("CANNOT_CANCEL");
+  }
+
+  return await appointmentModel.updateAppointment(appointmentId, {
+    status: "cancelled",
+  });
+};
+
 export const appointmentService = {
   bookAppointment,
-  checkStatus, // Export mới
+  checkStatus,
   getAvailableDoctors,
   getPatientAppointments,
   getDoctorAppointments,
   updateAppointmentStatus,
+  cancelAppointment,
 };
